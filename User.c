@@ -74,15 +74,20 @@ void process_command( struct sockaddr_in servAddr, int sock_fd)
     if (strcmp(command, "exit")==0){
         exit(0);
     } 
-    /* REQUEST */
+    /* LIST */
     else if(strcmp(command, "list")==0){
-        printf("list\n");
+        char buffer[4];
+        strcpy(buffer, "TQR");
+        
+        if(sendto(sock_fd, buffer, strlen(buffer), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
+            DieWithError("sendto() failed");
+        
     } 
-    /* SUBMIT */
+    /* REQUEST  */
     else if(strcmp(command, "request")==0){
         printf("request\n");
-    } 
-    /* LIST */
+    }
+    /* SUBMIT */ 
     else if(strcmp(command, "submit")==0){
         char q1[2], q2[2], q3[2], q4[2], q5[2];
         
