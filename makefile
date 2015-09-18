@@ -1,28 +1,28 @@
 CC=gcc
 CFLAGS=-c -Wall
 
-all: user ecp tes
+all: user ecp tes clean
 
-user: user.o die.o
+user: user.o DieWithError.o
 	$(CC) user.o DieWithError.o -o user
 
-ecp: ecp.o
-	$(CC) ecp.o -o ECP
+ecp: ecp.o DieWithError.o
+	$(CC) ecp.o DieWithError.o -o ECP
 
 tes: tes.o
 	$(CC) tes.o -o TES
     
-user.o: User.c
-	$(CC) $(CFLAGS) User.c
+user.o: dir_User/User.c
+	$(CC) $(CFLAGS) dir_User/User.c
 
-ecp.o: ECP.c
-	$(CC) $(CFLAGS) ECP.c
+ecp.o: dir_ECP/ECP.c
+	$(CC) $(CFLAGS) dir_ECP/ECP.c
     
-tes.o: TES.c
-	$(CC) $(CFLAGS) TES.c
+tes.o: dir_TES/TES.c
+	$(CC) $(CFLAGS) dir_TES/TES.c
 
 
-die.o: DieWithError.c
+DieWithError.o: DieWithError.c
 	$(CC) $(CFLAGS) DieWithError.c
 
 clean:
