@@ -16,6 +16,9 @@ int main(int argc, char *argv[]){
     struct sockaddr_in servAddr;
     unsigned short servPort;
     int sock_fd;
+    int broadcast;
+    broadcast = 1;
+
 
     if( argc < 1 || argc > 5 || argc % 2 != 1 ) /* test for correct number of arguments */
     {
@@ -52,6 +55,9 @@ int main(int argc, char *argv[]){
     if ((sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))<0)
     	DieWithError("socket() failed");
     
+    int ret;
+    ret=setsockopt(sock_fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
+
     /* define server address structure */
     memset(&servAddr, '\0', sizeof(servAddr));
     servAddr.sin_family = AF_INET;
@@ -61,6 +67,7 @@ int main(int argc, char *argv[]){
     for(;;){
         process_command(servAddr, sock_fd);
     }
+    close(sock_fd);
 }
 
 void process_command( struct sockaddr_in servAddr, int sock_fd)
@@ -76,11 +83,11 @@ void process_command( struct sockaddr_in servAddr, int sock_fd)
     } 
     /* LIST */
     else if(strcmp(command, "list")==0){
-        char buffer[4];
-        strcpy(buffer, "TQR");
+        char buffer[5];
+        strcpy(buffer, "TQR\n");
         
-        if(sendto(sock_fd, buffer, strlen(buffer), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
-            DieWithError("sendto() failed");
+    if(sendto(sock_fd, buffer, strlen(buffer), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
+        DieWithError("sendto() failed");
         
     } 
     /* REQUEST  */

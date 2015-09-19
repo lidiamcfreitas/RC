@@ -17,7 +17,8 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#define DEFAULT_PORT 58026
+#define DEFAULT_PORT 58026 
+#define MAX_TES 99
 
 void DieWithError(char *errorMessage);
 
