@@ -1,16 +1,16 @@
 CC=gcc
 CFLAGS=-c -Wall
 
-all: user ecp tes clean
+all: user ecp tes
 
 user: user.o DieWithError.o
-	$(CC) user.o DieWithError.o -o user
+	$(CC) User.o DieWithError.o -o user
 
 ecp: ecp.o DieWithError.o
-	$(CC) ecp.o DieWithError.o -o ECP
+	$(CC) ECP.o DieWithError.o -o ECP
 
 tes: tes.o
-	$(CC) tes.o -o TES
+	$(CC) TES.o -o TES
     
 user.o: dir_User/User.c
 	$(CC) $(CFLAGS) dir_User/User.c

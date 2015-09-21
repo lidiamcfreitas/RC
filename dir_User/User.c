@@ -17,6 +17,8 @@ int main(int argc, char *argv[]){
     unsigned short servPort;
     int sock_fd;
     int broadcast;
+    int ret;  
+ 
     broadcast = 1;
 
 
@@ -42,7 +44,6 @@ int main(int argc, char *argv[]){
      {
         if(strcmp(argv[1], "-n") == 0) 
         {
-            printf("here");
             hostptr = gethostbyname(argv[2]);
         }
         else if(strcmp(argv[1], "-p") == 0)
@@ -52,17 +53,15 @@ int main(int argc, char *argv[]){
      }
 
     /* create the UDP socket */
-    if ((sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))<0)
+    if ((sock_fd = socket(AF_INET, SOCK_DGRAM, 0))<0)
     	DieWithError("socket() failed");
     
-    int ret;
-    ret=setsockopt(sock_fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
     /* define server address structure */
     memset(&servAddr, '\0', sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     /* get ip string and then get the address */
-    servAddr.sin_addr.s_addr = inet_addr(hostptr->h_addr_list[0]);
+    servAddr.sin_addr.s_addr = ((struct in_addr*)(hostptr->h_addr_list[0]))->s_addr;
     servAddr.sin_port = htons(servPort);
     for(;;){
         process_command(servAddr, sock_fd);
@@ -83,12 +82,20 @@ void process_command( struct sockaddr_in servAddr, int sock_fd)
     } 
     /* LIST */
     else if(strcmp(command, "list")==0){
-        char buffer[5];
+        char buffer[4];
+        char* rcv_buffer;
+        int msg_size = 0;
+        socklen_t addr_size;
         strcpy(buffer, "TQR\n");
-        
-    if(sendto(sock_fd, buffer, strlen(buffer), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
-        DieWithError("sendto() failed");
-        
+        printf("Trying to list...\n");
+    	if(sendto(sock_fd, buffer, strlen(buffer), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
+       		DieWithError("sendto() failed");
+        rcv_buffer = malloc(sizeof(char)*5);
+        addr_size = sizeof(servAddr);
+        printf("Message sent...\n");
+        if((msg_size = recvfrom(sock_fd, rcv_buffer, 5, MSG_PEEK, (struct sockaddr*) &servAddr, &addr_size)<0))
+            DieWithError("recv() failed");  
+        printf("Message received, size: %d\n", msg_size);
     } 
     /* REQUEST  */
     else if(strcmp(command, "request")==0){

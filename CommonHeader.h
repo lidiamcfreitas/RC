@@ -19,7 +19,7 @@
 
 #define DEFAULT_PORT 58026 
 #define MAX_TES 99
-
+#define MAX_TOPIC_SIZE 25
 void DieWithError(char *errorMessage);
 
 #endif /* defined(____User__) */
