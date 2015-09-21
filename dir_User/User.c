@@ -93,7 +93,8 @@ void process_command( struct sockaddr_in servAddr, int sock_fd)
         rcv_buffer = malloc(sizeof(char)*5);
         addr_size = sizeof(servAddr);
         printf("Message sent...\n");
-        if((msg_size = recvfrom(sock_fd, rcv_buffer, 5, MSG_PEEK, (struct sockaddr*) &servAddr, &addr_size)<0))
+	
+        if(((msg_size = recvfrom(sock_fd, rcv_buffer, 100, MSG_PEEK, (struct sockaddr*) &servAddr, &addr_size))<0))
             DieWithError("recv() failed");  
         printf("Message received, size: %d\n", msg_size);
     } 
