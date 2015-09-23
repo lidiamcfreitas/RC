@@ -17,12 +17,18 @@ int main(int argc, char *argv[]){
     char buffer[255]; /* FIX: WHAT SIZE? */
     int recvStringLen;
     FILE *file_ptr;
-
+    char topic_name[26];
+    char topic_ip[16];
+    unsigned short topic_port;
+    char to_send[2600];
+    
     struct TES{
         char QName[255];
-        int TESIp;
+        char TESIp[16];
         unsigned short TESPort;  
     };
+
+    struct TES TES_servers[99];
     
     
     if(argc==1){
@@ -46,19 +52,26 @@ int main(int argc, char *argv[]){
     if(bind(sock_fd, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
     	DieWithError("bind() failed");
     
+    if((file_ptr = fopen("dir_ECP/topics.txt", "r"))==NULL)
+        DieWithError("fopen() failed");
+    
+    int i;
+    i = 0;
+    while(fscanf(file_ptr, "%s %s:%hu", topic_name, topic_ip, &topic_port)!=EOF){
+        strcpy(TES_servers[i].QName, topic_name);
+        strcpy(TES_servers[i].TESIp,  topic_ip);
+        TES_servers[i].TESPort = topic_port;
+        i++;
+        printf("%s %s:%d", topic_name, topic_ip, topic_port);
+    }
+    fclose(file_ptr);    
+
     clntAddrLen = sizeof(clntAddr);
     
     for(;;){ 
         if((recvStringLen = recvfrom(sock_fd, buffer, sizeof(buffer), 0, (struct sockaddr*) &clntAddr, &clntAddrLen))<0)
             DieWithError("recvfrom() failed");
         if (recvStringLen == strlen("TQR\n")){ /*when an TQR is received */
-            if((file_ptr = fopen("dir_ECP/topics.txt", "r"))==NULL)
-            	DieWithError("fopen() failed");
-            printf("received");
-            while(fscanf(file_ptr, "%s %s:%d",awtes, ip, port,)!=EOF){
-                	
-            }
-            fclose(file_ptr);    
         }
         printf("Received %sFrom %s:%d\n", buffer, inet_ntoa(clntAddr.sin_addr),ntohs(clntAddr.sin_port));
 
