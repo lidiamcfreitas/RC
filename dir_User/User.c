@@ -84,7 +84,7 @@ void process_command( struct sockaddr_in servAddr, int sock_fd)
     else if(strcmp(command, "list")==0){
         char send_buffer[4];
         char rcv_buffer[2476];
-       int msg_size = 0;
+        int msg_size = 0;
         socklen_t addr_size;
         
         strcpy(send_buffer, "TQR\n");
@@ -95,17 +95,29 @@ void process_command( struct sockaddr_in servAddr, int sock_fd)
         addr_size = sizeof(servAddr);
         printf("Message sent...\n");
 	
-        if(((msg_size = recvfrom(sock_fd, rcv_buffer, 2476, 0, (struct sockaddr*) &servAddr, &addr_size))<0))
-            DieWithError("recv() failed");  
+        if(((msg_size = recvfrom(sock_fd, rcv_buffer, 2476, 0, (struct sockaddr*) &servAddr, &addr_size))<0))  
+            DieWithError("recv() failed");
+        rcv_buffer[msg_size] = '\0';
+        printf("%s", rcv_buffer);
     } 
     /* REQUEST  */
     else if(strcmp(command, "request")==0){
         int request_no;
-        char[3] req_buffer;
+        char send_buffer[6];
+        char req_buffer[3];
+        
         scanf("%s", req_buffer);
         request_no = atoi(req_buffer);
         printf("request of topic %d\n", request_no);
-         
+        strcpy(send_buffer, "TER ");
+        strcat(send_buffer, req_buffer);
+        strcat(send_buffer, "\n");
+        printf("%d \n" , send_buffer[5]);
+    	
+        if(sendto(sock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
+       	    DieWithError("sendto() failed");
+        
+          
     }
     /* SUBMIT */ 
     else if(strcmp(command, "submit")==0){
