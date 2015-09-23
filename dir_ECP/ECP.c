@@ -18,6 +18,13 @@ int main(int argc, char *argv[]){
     int recvStringLen;
     FILE *file_ptr;
 
+    struct TES{
+        char QName[255];
+        int TESIp;
+        unsigned short TESPort;  
+    };
+    
+    
     if(argc==1){
         servPort = DEFAULT_PORT;
     } else if(argc == 3 && (strcmp(argv[1], "-p") == 0)){
@@ -47,7 +54,10 @@ int main(int argc, char *argv[]){
         if (recvStringLen == strlen("TQR\n")){ /*when an TQR is received */
             if((file_ptr = fopen("dir_ECP/topics.txt", "r"))==NULL)
             	DieWithError("fopen() failed");
-            
+            printf("received");
+            while(fscanf(file_ptr, "%s %s:%d",awtes, ip, port,)!=EOF){
+                	
+            }
             fclose(file_ptr);    
         }
         printf("Received %sFrom %s:%d\n", buffer, inet_ntoa(clntAddr.sin_addr),ntohs(clntAddr.sin_port));
