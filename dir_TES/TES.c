@@ -72,7 +72,6 @@ int main(int argc, char *argv[]){
         file_size = ftell(file_ptr);
         rewind(file_ptr);
         
-        bytes_left = file_size;        
         /* TODO - ir buscar o numero do request e a hora */
 
         strcpy(write_buffer, "AQT 12345 09JAN2015_20:00:00 ");
