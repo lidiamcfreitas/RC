@@ -96,7 +96,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int tcpsock_fd
         char send_buffer[5];
         char rcv_buffer[2476];
         int msg_size = 0;
-        int num_topics;
+        int num_topics, i;
         socklen_t addr_size;
 
         strcpy(send_buffer, "TQR\n");
@@ -128,7 +128,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int tcpsock_fd
             topic_name = strtok(NULL, " ");
             sscanf(topic_name,"T%d",&num_topics);
 
-            for(int i = 1; i<=num_topics;i++){
+            for(i = 1; i<=num_topics;i++){
                 topic_name = strtok(NULL, " ");
                 printf("%d. %s\n", i, topic_name);
             }

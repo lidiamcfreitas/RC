@@ -1,5 +1,40 @@
 #include "../CommonHeader.h"
 
+
+char* tcpread_until_char(int socket, char c, int max_length){
+    char buffer[max_length];
+    char* ptr; 
+    int bytes_read; 
+    ptr = &buffer[0];
+    bytes_read = read(socket, ptr, 1);
+    
+    char read_c = ptr[0];
+    printf("read... %c\n", c);
+    while( read_c != c){
+        ptr += bytes_read;
+        bytes_read = read(socket, ptr, 1);
+        read_c = ptr[0];
+        printf("tcp_read: %c\n", c);
+    }
+    ptr+= bytes_read;
+    ptr[0] = '\0';
+    return buffer;
+}
+
+char* tcpread_nbytes(int socket, int bytes){
+    int bytes_left = bytes, bytes_read;
+    char buffer[bytes];
+    char* ptr; 
+    printf("reading %d bytes...\n", bytes);
+    while( bytes_left > 0 ){
+        bytes_read = read(socket, ptr, bytes_left);
+        bytes_left -= bytes_read;
+        ptr += bytes_read; 
+        printf("read %d\n, bytes_read");
+    }
+    return buffer;
+}
+
 int main(int argc, char *argv[]){
     struct hostent *hostptr;
     struct sockaddr_in server_addr;
@@ -66,8 +101,6 @@ int main(int argc, char *argv[]){
         bytes_left -= bytes_written;
         ptr += bytes_written; 
     }
-    ptr = &read_buffer[0];
-    int done = 0;
     bytes_left = 29;
     printf("reading...\n");
     while( bytes_left > 0 ){
@@ -77,24 +110,24 @@ int main(int argc, char *argv[]){
         printf("read %d\n, bytes_read");
     }
     printf("parsing...\n");
-    char* data;
+    char* data = tcpread_nbytes(sock_fd, 4);
     data = strtok(read_buffer, " ");
-    while(data != NULL){
+    /*while(data != NULL){
         printf("%s\n", data);
         data = strtok(NULL," ");
-    }
-    ptr = &read_buffer[0];
-    bytes_read = read(sock_fd, ptr, 1);
+    }*/
+    printf("Received: %s\n", data);
+    data = tcpread_until_char(sock_fd, ' ', 26);
+    printf("QID: %s\n", data); 
+        
+    data = tcpread_nbytes(sock_fd, 19);
+    printf("Time: %s\n", data);
+
+    data = tcpread_until_char(sock_fd, ' ', 32);
+    printf("File size: %s\n", data);
     
-    char c = ptr[0];
-    printf("read... %c\n", c);
-    while( c != ' '){
-        ptr += bytes_read;
-        bytes_read = read(sock_fd, ptr, 1);
-        c = ptr[0];
-        printf("read ... %c \n" , c);
-    }
-    ptr[0] = '\0';
+    
+    ptr[0] = '\0'; 
     long total_bytes = 0, file_size = atoi(read_buffer);
     bytes_left = file_size;
     char* test_buffer = malloc(sizeof(char)*256+2);
