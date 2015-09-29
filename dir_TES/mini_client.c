@@ -1,29 +1,32 @@
 #include "../CommonHeader.h"
+#include <math.h>
 
-
-char* tcpread_until_char(int socket, char c, int max_length){
-    char buffer[max_length];
+char* tcpread_until_char(int socket, char c, int max_length, int terminate){
+    char* buffer = malloc(sizeof(char)*max_length);
     char* ptr; 
     int bytes_read; 
+    memset(buffer, '\0', max_length); 
     ptr = &buffer[0];
     bytes_read = read(socket, ptr, 1);
-    memset(buffer, '0', max_length); 
     char read_c = ptr[0];
-    while( read_c != c){
+    int i = 0;
+    while( (read_c != c ) && i < max_length){
         ptr += bytes_read;
         bytes_read = read(socket, ptr, 1);
         read_c = ptr[0];
-        printf("tcp_read: %c\n", read_c);
+        i++;
     }
-    ptr+= bytes_read;
+    if(!terminate)
+        ptr += bytes_read;
     ptr[0] = '\0';
     return buffer;
 }
 
 char* tcpread_nbytes(int socket, int bytes){
     int bytes_left = bytes, bytes_read;
-    char buffer[bytes];
+    char* buffer = malloc(sizeof(char)*bytes);
     char* ptr; 
+    memset(buffer, '\0', bytes);
     ptr = &buffer[0];
     printf("reading %d bytes...\n", bytes);
     while( bytes_left > 0 ){
@@ -102,14 +105,12 @@ int main(int argc, char *argv[]){
     }
     char* data = tcpread_nbytes(sock_fd, 4);
     printf("Received: %s\n", data);
-    data = tcpread_until_char(sock_fd, ' ', 26);
+    data = tcpread_until_char(sock_fd, ' ', 26, 1);
     printf("QID: %s\n", data); 
     data = tcpread_nbytes(sock_fd, 19);
     printf("Time: %s\n", data);
-    data = tcpread_until_char(sock_fd, ' ', 32);
-    long int data_t = strtol(data, NULL, 10);
-    printf("File size: %s or %lu\n", data , data_t);
-  
+    data = tcpread_until_char(sock_fd, ' ', 32, 1);
+    printf("Data: %s , converted: %d", data, atoi(data));
     ptr[0] = '\0'; 
     long total_bytes = 0, file_size = atoi(data);
     bytes_left = file_size;

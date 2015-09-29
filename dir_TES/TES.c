@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
         
         /* TODO - ir buscar o numero do request e a hora */
 
-        strcpy(write_buffer, "AQT 12345 09JAN2015_20:00:00 ");
+        strcpy(write_buffer, "AQT 12345_09JAN2015 09JAN2015_20:00:00 ");
         sprintf(buffer, "%d", file_size);
         strcat(write_buffer, buffer);
         strcat(write_buffer, " ");
