@@ -7,7 +7,7 @@ user: user.o DieWithError.o
 	$(CC) User.o DieWithError.o -o user
 
 mini_client: mini_client.o DieWithError.o
-	$(CC) mini_client.o DieWithError.o -o mini_client
+	$(CC) mini_client.o DieWithError.o -lm -o mini_client
 
 ecp: ecp.o DieWithError.o;
 	$(CC) ECP.o DieWithError.o -o ECP
