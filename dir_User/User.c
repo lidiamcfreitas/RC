@@ -127,18 +127,18 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
             topic_name = strtok(rcv_buffer, " ");
 
             if(strcmp(topic_name,"AWT")!=0)
-              printf("Could not recognize AWT\n");
+              DieWithError("Could not recognize AWT\n");
             
             /* print topics list */
             topic_name = strtok(NULL, " ");
             num_topics = atoi(topic_name);
             for(i = 1; i<=num_topics;i++){
                 topic_name = strtok(NULL, " ");
-                printf("%d. %s\n", i, topic_name);
+                printf("%d. %s\n", i, topic_name); /* TODO verify if name is larger than 25 */
             }
         }
     }
-    /* REQUEST  */
+    /* REQUEST  TOPIC*/
     else if(strcmp(command, "request")==0){
       char request_no[3];
       char send_buffer[10];
@@ -201,8 +201,10 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
           char q1[2], q2[2], q3[2], q4[2], q5[2];
           char send_buffer[46];
           char QID[24] = "111222333444555666777";
-          char SID[6] = "78980";
+          char SID[6]; 
           int stringLen;
+
+          sprintf(SID, "%d", sid); /* TODO test */
 
           scanf("%s %s %s %s %s", q1, q2, q3, q4, q5);
 
