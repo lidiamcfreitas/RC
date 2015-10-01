@@ -7,6 +7,8 @@
 //
 
 #include "../CommonHeader.h"
+#include <time.h>       /* time */
+
 
 void process_command(struct sockaddr_in ecpAddr, int udpsock_fd);
 int tcpinit(char * tesPort, char* tesAddr, struct sockaddr_in tcpAddr);
@@ -18,7 +20,7 @@ int main(int argc, char *argv[]){
     unsigned short ecpPort;
     int udpsock_fd;
     int broadcast;
-    int ret;
+    int ret, sid;
 
     broadcast = 1;
 
@@ -65,6 +67,10 @@ int main(int argc, char *argv[]){
     ecpAddr.sin_addr.s_addr = ((struct in_addr*)(ecphostptr->h_addr_list[0]))->s_addr;
     ecpAddr.sin_port = htons(ecpPort);
 
+    
+    /* create SID */
+    srand (time(NULL));
+    sid = rand() % 90000 + 10000;
 
     for(;;){
         process_command(ecpAddr, udpsock_fd);
@@ -95,14 +101,15 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
         int msg_size = 0;
         int num_topics, i;
         socklen_t addr_size;
-
+        
+        /* Send TQR\n to ECP */
         strcpy(send_buffer, "TQR\n");
         printf("Asking for list of topics...\n");
     	if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
        		DieWithError("sendto() failed");
 
         addr_size = sizeof(ecpAddr);
-        printf("Message sent...\n");
+        printf("TQR sent...\n");
 
         /* RECEIVE TOPICS */
         if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, 2476, 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
@@ -121,7 +128,8 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
 
             if(strcmp(topic_name,"AWT")!=0)
               printf("Could not recognize AWT\n");
-
+            
+            /* print topics list */
             topic_name = strtok(NULL, " ");
             num_topics = atoi(topic_name);
             for(int i = 1; i<=num_topics;i++){
