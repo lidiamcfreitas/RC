@@ -10,7 +10,7 @@
 #include <time.h>       /* time */
 
 
-void process_command(struct sockaddr_in ecpAddr, int udpsock_fd);
+void process_command(struct sockaddr_in ecpAddr, int udpsock_fd, int sid);
 int tcpinit(char * tesPort, char* tesAddr, struct sockaddr_in tcpAddr);
 
 int main(int argc, char *argv[]){
@@ -67,18 +67,18 @@ int main(int argc, char *argv[]){
     ecpAddr.sin_addr.s_addr = ((struct in_addr*)(ecphostptr->h_addr_list[0]))->s_addr;
     ecpAddr.sin_port = htons(ecpPort);
 
-    
+
     /* create SID */
     srand (time(NULL));
     sid = rand() % 90000 + 10000;
 
     for(;;){
-        process_command(ecpAddr, udpsock_fd);
+        process_command(ecpAddr, udpsock_fd, sid);
     }
     close(udpsock_fd);
 }
 
-void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
+void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 {
     char command[8];
     char *topic_name;
@@ -101,7 +101,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
         int msg_size = 0;
         int num_topics, i;
         socklen_t addr_size;
-        
+
         /* Send TQR\n to ECP */
         strcpy(send_buffer, "TQR\n");
         printf("Asking for list of topics...\n");
@@ -128,7 +128,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
 
             if(strcmp(topic_name,"AWT")!=0)
               DieWithError("Could not recognize AWT\n");
-            
+
             /* print topics list */
             topic_name = strtok(NULL, " ");
             num_topics = atoi(topic_name);
@@ -201,7 +201,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
           char q1[2], q2[2], q3[2], q4[2], q5[2];
           char send_buffer[46];
           char QID[24] = "111222333444555666777";
-          char SID[6]; 
+          char SID[6];
           int stringLen;
 
           sprintf(SID, "%d", sid); /* TODO test */
