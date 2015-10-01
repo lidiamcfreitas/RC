@@ -21,6 +21,8 @@ char* tcpread_until_char(int socket, char c, int max_length, int terminate){
     while( (read_c != c ) && i < max_length){
         ptr += bytes_read;
         bytes_read = read(socket, ptr, 1);
+        if(bytes_read<0)
+            DieWithError("Error reading on TCP connection. Qutting\n");
         read_c = ptr[0];
         i++;
     }
@@ -39,6 +41,8 @@ char* tcpread_nbytes(int socket, int bytes){
     printf("reading %d bytes...\n", bytes);
     while( bytes_left > 0 ){
         bytes_read = read(socket, ptr, bytes_left);
+        if(bytes_read < 0)
+            DieWithError("Error reading from TCP connection. Qutting");
         bytes_left -= bytes_read;
         ptr += bytes_read; 
     }
@@ -51,6 +55,8 @@ void tcpwrite(int socket, char* buffer, int nbytes){
     ptr = &buffer[0];
     while(bytes_left > 0){
         bytes_written = write(socket, ptr, bytes_left);
+        if(bytes_written<0)
+            DieWithError("Error writing to TCP connection. Quitting");
         bytes_left -= bytes_written;
         ptr += bytes_written; 
     }
