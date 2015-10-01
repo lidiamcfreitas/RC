@@ -22,4 +22,10 @@
 #define MAX_TOPIC_SIZE 25
 void DieWithError(char *errorMessage);
 
+char* tcpread_until_char(int socket, char c, int max_length, int terminate);
+
+char* tcpread_nbytes(int socket, int bytes);
+
+void tcpwrite(int socket, char* buffer, int nbytes); 
+
 #endif /* defined(____User__) */

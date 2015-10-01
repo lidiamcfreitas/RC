@@ -132,7 +132,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd)
             /* print topics list */
             topic_name = strtok(NULL, " ");
             num_topics = atoi(topic_name);
-            for(int i = 1; i<=num_topics;i++){
+            for(i = 1; i<=num_topics;i++){
                 topic_name = strtok(NULL, " ");
                 printf("%d. %s\n", i, topic_name);
             }

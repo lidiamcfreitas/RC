@@ -1,19 +1,19 @@
 CC=gcc
 CFLAGS=-c -Wall
 
-all: user ecp tes mini_client
+all: user ecp tes mini_client 
 
-user: user.o DieWithError.o
-	$(CC) User.o DieWithError.o -o user
+user: user.o common.o
+	$(CC) User.o common.o -o user
 
 mini_client: mini_client.o DieWithError.o
-	$(CC) mini_client.o DieWithError.o -lm -o mini_client
+	$(CC) mini_client.o common.o -lm -o mini_client
 
 ecp: ecp.o DieWithError.o;
-	$(CC) ECP.o DieWithError.o -o ECP
+	$(CC) ECP.o common.o -o ECP
 
 tes: tes.o DieWithError.o
-	$(CC) TES.o DieWithError.o -o TES
+	$(CC) TES.o common.o -o TES
     
 user.o: dir_User/User.c
 	$(CC) $(CFLAGS) dir_User/User.c
@@ -27,8 +27,8 @@ ecp.o: dir_ECP/ECP.c
 tes.o: dir_TES/TES.c
 	$(CC) $(CFLAGS) dir_TES/TES.c
 
-DieWithError.o: DieWithError.c
-	$(CC) $(CFLAGS) DieWithError.c
+common.o: common.c
+	$(CC) $(CFLAGS) common.c
 
 clean:
 	rm *.o
