@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <string.h>
 
 void DieWithError(char *errorMessage)
 {
@@ -53,3 +55,49 @@ void tcpwrite(int socket, char* buffer, int nbytes){
         ptr += bytes_written; 
     }
 }
+
+char *get_time()
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    int len_time;
+    char str_time[26];
+    char *str_day_week, *str_month, *str_day, *str_hour, *str_min, *str_sec, *str_year;
+    char* str_output = (char *) malloc(19);
+    char aux[3];
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    strcpy(str_time, asctime(timeinfo));
+
+    
+    str_day_week = strtok(str_time, " :");
+    str_month = strtok(NULL, " :");
+    str_day = strtok(NULL, " :");
+    str_hour = strtok(NULL, " :");
+    str_min = strtok(NULL, " :");
+    str_sec = strtok(NULL, " :");
+    str_year = strtok(NULL, " :\n");
+
+    
+    if (strlen(str_day)==1){
+        strcpy(aux, "0");
+        strcat(aux, str_day);
+        str_day = aux;
+    }
+
+    strcpy(str_output, str_day);
+    strcat(str_output, str_month);
+    strcat(str_output, str_year);
+    strcat(str_output, "_");
+    strcat(str_output, str_hour);
+    strcat(str_output, ":");
+    strcat(str_output, str_min);
+    strcat(str_output, ":");
+    strcat(str_output, str_sec);
+     
+    // string format: DDMMMYYYY_HH:MM:SS
+
+    return str_output;
+}
+
