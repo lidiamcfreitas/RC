@@ -62,7 +62,7 @@ void tcpwrite(int socket, char* buffer, int nbytes){
     }
 }
 
-char *get_time()
+char *get_time(int offset)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -73,6 +73,7 @@ char *get_time()
     char aux[3];
 
     time ( &rawtime );
+    rawtime += offset;
     timeinfo = localtime ( &rawtime );
     strcpy(str_time, asctime(timeinfo));
 
