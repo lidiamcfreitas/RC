@@ -37,6 +37,17 @@ char* tcpread_nbytes(int socket, int bytes){
     return buffer;
 }
 
+void tcpwrite(int socket, char* buffer, int nbytes){ 
+    char* ptr;
+    int bytes_left = nbytes, bytes_written;
+    ptr = &buffer[0];
+    while(bytes_left > 0){
+        bytes_written = write(socket, ptr, bytes_left);
+        bytes_left -= bytes_written;
+        ptr += bytes_written; 
+    }
+}
+
 int main(int argc, char *argv[]){
     struct hostent *hostptr;
     struct sockaddr_in server_addr;
@@ -91,18 +102,11 @@ int main(int argc, char *argv[]){
     
     connect(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));    
 
-    int bytes_written, bytes_read, bytes = 10, bytes_left = 10;
     strcpy(write_buffer, "RQT ");
     strcat(write_buffer, "12345\n");
+    
+    tcpwrite(sock_fd, write_buffer, 10);
 
-    char* ptr;
-    ptr = &write_buffer[0];
-     
-    while(bytes_left > 0){
-        bytes_written = write(sock_fd, ptr, bytes_left);
-        bytes_left -= bytes_written;
-        ptr += bytes_written; 
-    }
     char* data = tcpread_nbytes(sock_fd, 4);
     printf("Received: %s\n", data);
     data = tcpread_until_char(sock_fd, ' ', 26, 1);
@@ -111,12 +115,14 @@ int main(int argc, char *argv[]){
     printf("Time: %s\n", data);
     data = tcpread_until_char(sock_fd, ' ', 32, 1);
     printf("Data: %s , converted: %d", data, atoi(data));
-    ptr[0] = '\0'; 
+    
     long total_bytes = 0, file_size = atoi(data);
+    int bytes_left, bytes_read, bytes_written;
     bytes_left = file_size;
     char* test_buffer = malloc(sizeof(char)*256+2);
-    ptr = &test_buffer[0];
     FILE* end_file = fopen("new_file.pdf", "w");
+    char* ptr;
+    ptr = &test_buffer[0];
     printf("Starting file download. %lu bytes left", bytes_left);
     while(bytes_left > 0){
         bytes_read = read(sock_fd, ptr, 256);
@@ -129,6 +135,6 @@ int main(int argc, char *argv[]){
         free(test_buffer);
         test_buffer = malloc(sizeof(char)*256);
         ptr = &test_buffer[0];
-     }
+    }
     fclose(end_file);
 }
