@@ -28,9 +28,10 @@ int main(int argc, char *argv[]){
     FILE *file_ptr;
     unsigned short topic_port;
     char* ecp_name;
-    char read_buffer[32];
+    char* read_buffer;
     char write_buffer[256];
     char buffer[32];
+
     if(argc==5){
         server_port = atoi(argv[1]);
         ecp_name = argv[2];
@@ -61,9 +62,11 @@ int main(int argc, char *argv[]){
     char* ptr;
     for(;;){
         listen(sock_fd, 5); 
+       
         client_addr_len = sizeof(client_addr);
         new_fd = accept(sock_fd, (struct sockaddr*)&client_addr, &client_addr_len);
-        read(new_fd, read_buffer, sizeof(read_buffer));  
+        
+        read_buffer = tcpread_nbytes(new_fd, 10);  
         printf("Received %sFrom %s:%d\n", read_buffer, inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
 
         /*TODO - verificar conteudo do RQT <iiiii>*/
@@ -80,14 +83,9 @@ int main(int argc, char *argv[]){
         strcat(write_buffer, " ");
         size_t message_size = strlen(write_buffer)*sizeof(char); 
         printf("Sending %s , size %d, file_size: %d\n", write_buffer, message_size,file_size);
-        bytes_left = message_size;
-        ptr = &write_buffer[0];        
-        while(bytes_left > 0 ){
-            bytes_sent = write(new_fd, ptr, bytes_left);
-            bytes_left -= bytes_sent;
-            ptr += bytes_sent;
-        }
+        tcpwrite(new_fd, write_buffer, message_size);
         /*Copiar código, mandar write_buffer pelo socket*/
+        
         bytes_left = file_size;
         memset(write_buffer, '\0', 256);
         ptr = &write_buffer[0];
@@ -97,6 +95,10 @@ int main(int argc, char *argv[]){
             bytes_left -= block_size;
             while(block_size > 0){
                 bytes_sent = write(new_fd, ptr, block_size);
+                if(write < 0){
+                    printf("Error sending file");
+                    break;
+                }
                 block_size -= bytes_sent;
                 ptr += bytes_sent;
             }
