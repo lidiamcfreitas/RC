@@ -118,10 +118,10 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
         printf("(DEBUG)Received: %s \n", rcv_buffer);
 
         if(strcmp("EOF\n", rcv_buffer)==0)
-            printf("No topics to show.\n");
+            DieWithError("No topics to show.\n");
 
         else if(strcmp("ERR\n", rcv_buffer)==0)
-            printf("Error reading TQR\n");
+            DieWithError("Error reading TQR\n");
 
         else{ /*parse AWT nX Topic1 Topic2 ... */
             topic_name = strtok(rcv_buffer, " ");
@@ -173,9 +173,8 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
       else if(msg_size != 28){
           printf("(DEBUG) msg_size: %d", msg_size);
       }
-
-
       else{ /*parse AWTES IPTES PORTES ... */
+          printf("parsing AWTES\n");
           topic_name = strtok(rcv_buffer, " ");
 
           if(strcmp(topic_name,"AWTES")!=0)
@@ -187,7 +186,6 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
       }
 
       tcpsock_fd = tcpinit(tesAddr, tesPort, tcpAddr);
-
 
 
 
