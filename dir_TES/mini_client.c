@@ -18,13 +18,13 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Usage: %s [-n ECPname] [-p ECPport]\n", argv[0]);
         exit(1);
     }
-    
+
     /* default values */
     if((hostptr = gethostbyname("localhost"))<0){
         DieWithError("gethostbyname() failed");
     }
     server_port = DEFAULT_PORT;
-     
+
     if(argc==5)
     {   /* considering that the order is correct */
         if((hostptr = gethostbyname(argv[2]))<0)
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
         server_port = atoi(argv[4]);
     }
     if(argc==3)
-     {
+    {
         if(strcmp(argv[1], "-n") == 0) 
         {
             hostptr = gethostbyname(argv[2]);
@@ -41,23 +41,23 @@ int main(int argc, char *argv[]){
         {
             server_port = atoi(argv[2]);
         }
-     }
+    }
 
     /* create the UDP socket */
     if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0))<0)
-    	DieWithError("socket() failed");
-    
+        DieWithError("socket() failed");
+
 
     memset(&server_addr, '\0', sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = ((struct in_addr*)(hostptr->h_addr_list[0]))->s_addr;
     server_addr.sin_port = htons(server_port);
-    
+
     connect(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));    
 
     strcpy(write_buffer, "RQT ");
     strcat(write_buffer, "12345\n");
-    
+
     tcpwrite(sock_fd, write_buffer, 10);
 
     char* data = tcpread_nbytes(sock_fd, 4);
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]){
     printf("Time: %s\n", data);
     data = tcpread_until_char(sock_fd, ' ', 32, 1);
     printf("Data: %s , converted: %d", data, atoi(data));
-    
+
     long total_bytes = 0, file_size = atoi(data);
     int bytes_left, bytes_read, bytes_written;
     bytes_left = file_size;

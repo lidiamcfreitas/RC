@@ -1,4 +1,3 @@
-//
 //  User.c
 //
 //
@@ -11,7 +10,7 @@
 
 
 void process_command(struct sockaddr_in ecpAddr, int udpsock_fd, int sid);
-int tcpinit(char * tesPort, char* tesAddr, struct sockaddr_in tcpAddr);
+int tcpinit(char * tes_addr, short unsigned tes_port);
 
 int main(int argc, char *argv[]){
 
@@ -20,8 +19,7 @@ int main(int argc, char *argv[]){
     unsigned short ecpPort;
     int udpsock_fd;
     int broadcast;
-    int ret, sid;
-
+    int sid;
     broadcast = 1;
 
 
@@ -44,7 +42,7 @@ int main(int argc, char *argv[]){
         ecpPort = atoi(argv[4]);
     }
     if(argc==3)
-     {
+    {
         if(strcmp(argv[1], "-n") == 0)
         {
             ecphostptr = gethostbyname(argv[2]);
@@ -53,11 +51,11 @@ int main(int argc, char *argv[]){
         {
             ecpPort = atoi(argv[2]);
         }
-     }
+    }
 
     /* create the UDP socket */
     if ((udpsock_fd = socket(AF_INET, SOCK_DGRAM, 0))<0)
-    	DieWithError("UDP socket() failed");
+        DieWithError("UDP socket() failed");
 
 
     /* define server address structure */
@@ -84,7 +82,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
     char *topic_name;
     int tcpsock_fd = 0;
     struct sockaddr_in tcpAddr;
-
+    char* QID;
     memset(&command, '\0', sizeof(command));
 
     printf("> ");
@@ -105,8 +103,9 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
         /* Send TQR\n to ECP */
         strcpy(send_buffer, "TQR\n");
         printf("Asking for list of topics...\n");
-    	if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
-       		DieWithError("sendto() failed");
+        if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
+
+            DieWithError("sendto() failed");
 
         addr_size = sizeof(ecpAddr);
         printf("TQR sent...\n");
@@ -127,7 +126,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             topic_name = strtok(rcv_buffer, " ");
 
             if(strcmp(topic_name,"AWT")!=0)
-              DieWithError("Could not recognize AWT\n");
+                DieWithError("Could not recognize AWT\n");
 
             /* print topics list */
             topic_name = strtok(NULL, " ");
@@ -140,135 +139,159 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
     }
     /* REQUEST  TOPIC*/
     else if(strcmp(command, "request")==0){
-      char request_no[3];
-      char send_buffer[10];
-      char rcv_buffer[30];
-      int msg_size = 0;
-      char tesAddr[16];
-      unsigned short tesPort;
-      socklen_t addr_size;
+        char request_no[3];
+        char send_buffer[10];
+        char rcv_buffer[30];
+        int msg_size = 0;
+        char tes_addr[16];
+        unsigned short tes_port;
+        socklen_t addr_size;
 
-      /* sending */
-      scanf("%s", request_no);
-      printf("request of topic %s\n", request_no);
-      strcpy(send_buffer, "TER ");
-      strcat(send_buffer, request_no);
-      strcat(send_buffer, "\n");
-      printf("%s \n" , send_buffer);
+        /* sending */
+        scanf("%s", request_no);
+        printf("request of topic %s\n", request_no);
+        strcpy(send_buffer, "TER ");
+        strcat(send_buffer, request_no);
+        strcat(send_buffer, "\n");
+        printf("%s \n" , send_buffer);
 
-      if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
-           DieWithError("sendto() failed");
+        if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
+            DieWithError("sendto() failed");
 
-      /* receiving */
-      if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
-          DieWithError("recv() failed");
+        /* receiving */
+        if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
+            DieWithError("recv() failed");
 
-      rcv_buffer[msg_size] = '\0';
-      printf("(DEBUG)Received: %s", rcv_buffer);
+        rcv_buffer[msg_size] = '\0';
+        printf("(DEBUG)Received: %s", rcv_buffer);
 
-      if(strcmp("EOF\n", rcv_buffer)==0)
-          printf("No topics to show.\n");
-      else if(strcmp("ERR\n", rcv_buffer)==0)
-          printf("Error reading TQR\n");
-      else if(msg_size != 28){
-          printf("(DEBUG) msg_size: %d", msg_size);
-      }
-      else{ /*parse AWTES IPTES PORTES ... */
-          printf("parsing AWTES\n");
-          topic_name = strtok(rcv_buffer, " ");
+        if(strcmp("EOF\n", rcv_buffer)==0)
+            printf("No topics to show.\n");
+        else if(strcmp("ERR\n", rcv_buffer)==0)
+            printf("Error reading TQR\n");
+        else if(msg_size != 28){
+            printf("(DEBUG) msg_size: %d", msg_size);
+        }
+        else{ /*parse AWTES IPTES PORTES ... */
+            printf("parsing AWTES\n");
+            topic_name = strtok(rcv_buffer, " ");
 
-          if(strcmp(topic_name,"AWTES")!=0)
-            printf("Could not recognize AWTES\n");
-          topic_name = strtok(NULL, " ");
-          strcpy(tesAddr, topic_name);
-          topic_name = strtok(NULL, " ");
-          tesPort = atoi(topic_name);
-      }
+            if(strcmp(topic_name,"AWTES")!=0)
+                printf("Could not recognize AWTES\n");
+            topic_name = strtok(NULL, " ");
+            strcpy(tes_addr, topic_name);
+            topic_name = strtok(NULL, " ");
+            tes_port = atoi(topic_name);
 
-      tcpsock_fd = tcpinit(tesAddr, tesPort, tcpAddr);
-
+            tcpsock_fd = tcpinit(tes_addr, tes_port);
 
 
-            /* -------------->>>>> FIX-ME <<<<<------------ needs to act on AWTES response */
+            strcpy(send_buffer, "RQT 12345\n");
+            printf("Sending request to %d\n", tcpsock_fd);
+            tcpwrite(tcpsock_fd, send_buffer, 10);
+            printf("Answer sent\n");
+            char* data = tcpread_nbytes(tcpsock_fd, 4);
+            printf("Received: %s\n", data);
+            data = tcpread_until_char(tcpsock_fd, ' ', 26, 1);
+            printf("QID: %s\n", data); 
+            strcpy(QID, data);
+            data = tcpread_nbytes(tcpsock_fd, 19);
+            printf("Time: %s\n", data);
+            data = tcpread_until_char(tcpsock_fd, ' ', 32, 1);
+            printf("Data: %s , converted: %d", data, atoi(data));
 
-    }
+            long total_bytes = 0, file_size = atoi(data);
+            int bytes_left, bytes_read, bytes_written;
+            bytes_left = file_size;
+            char* test_buffer = malloc(sizeof(char)*256+2);
+            FILE* end_file = fopen("new_file.pdf", "w");
+            char* ptr;
+            ptr = &test_buffer[0];
+            printf("Starting file download. %lu bytes left", bytes_left);
+            while(bytes_left > 0){
+                bytes_read = read(tcpsock_fd, ptr, 256);
+                bytes_left -= bytes_read;
+                ptr += bytes_read;
+                total_bytes += bytes_read;
+                ptr[0] = '\0';
+                bytes_written = fwrite(test_buffer, sizeof(char), bytes_read, end_file);
+                free(test_buffer);
+                test_buffer = malloc(sizeof(char)*256);
+                ptr = &test_buffer[0];
+            }
+            printf("Downloaded file with success!\n");
+            fclose(end_file);
+        }
+    }       /* -------------->>>>> FIX-ME <<<<<------------ needs to act on AWTES response */
 
     /* SUBMIT */
     else if(strcmp(command, "submit")==0){
         if(tcpsock_fd != 0 ){
-          char q1[2], q2[2], q3[2], q4[2], q5[2];
-          char send_buffer[46];
-          char QID[24] = "111222333444555666777";
-          char SID[6];
-          int stringLen;
+            char q1[2], q2[2], q3[2], q4[2], q5[2];
+            char send_buffer[46];
+            char SID[6];
+            int stringLen;
 
-          sprintf(SID, "%d", sid); /* TODO test */
+            sprintf(SID, "%d", sid); /* TODO test */
 
-          scanf("%s %s %s %s %s", q1, q2, q3, q4, q5);
+            scanf("%s %s %s %s %s", q1, q2, q3, q4, q5);
 
-          if(connect(tcpsock_fd, (struct sockaddr*) &tcpAddr, sizeof(tcpAddr))<0)
-                    DieWithError("connect() failed");
+            strcat(send_buffer,"RQS ");
+            strcat(send_buffer,SID);
+            strcat(send_buffer, " ");
+            strcat(send_buffer,QID);
+            strcat(send_buffer, " ");
+            strcat(send_buffer,q1);
+            strcat(send_buffer, " ");
+            strcat(send_buffer,q2);
+            strcat(send_buffer, " ");
+            strcat(send_buffer,q3);
+            strcat(send_buffer, " ");
+            strcat(send_buffer,q4);
+            strcat(send_buffer, " ");
+            strcat(send_buffer,q5);
+            stringLen = strlen(send_buffer);
 
+            printf("%s", send_buffer);
+            tcpwrite(tcpsock_fd, send_buffer, stringLen);
 
-          strcat(send_buffer,"RQS ");
-          strcat(send_buffer,SID);
-          strcat(send_buffer, " ");
-          strcat(send_buffer,QID);
-          strcat(send_buffer, " ");
-          strcat(send_buffer,q1);
-          strcat(send_buffer, " ");
-          strcat(send_buffer,q2);
-          strcat(send_buffer, " ");
-          strcat(send_buffer,q3);
-          strcat(send_buffer, " ");
-          strcat(send_buffer,q4);
-          strcat(send_buffer, " ");
-          strcat(send_buffer,q5);
-          stringLen = strlen(send_buffer);
-
-          printf("%s", send_buffer);
-          if(send(tcpsock_fd, send_buffer, stringLen, 0)!= stringLen)
-                    DieWithError("send() sent a different number of bytes than expected");
-
-        /* -------------->>>>> FIX-ME <<<<<------------*/
-      }
-      else{
-
-        printf("Can't submit before requesting\n");
-      }
-
+            /* -------------->>>>> FIX-ME <<<<<------------*/
+        }
+        else
+        {
+            printf("Can't submit before requesting\n");
+        }
     }
     /* HELP */
     else if(strcmp(command, "help")==0){
         printf("available commands:\n"
-                    "\tlist\n"
-                    "\trequest\n"
-                    "\tsubmit X X X X X\n"
-                    "\texit\n"
-                    "\thelp\n");
+                "\tlist\n"
+                "\trequest\n"
+                "\tsubmit X X X X X\n"
+                "\texit\n"
+                "\thelp\n");
     } else { /* NOT FOUND */
         printf("%s: command not found. write 'help' for available commands.\n", command);
     }
     printf("\n");
 }
 
+struct sockaddr_in server_addr;
 
-int tcpinit(char* tesPort, char* tesAddr, struct sockaddr_in tcpAddr){
-
+int tcpinit(char* tes_addr, short unsigned tes_port){
     int tcpsock_fd;
-
-    tesPort = atoi(tesPort);
+    struct sockaddr_in tcp_addr;
 
     if((tcpsock_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP))<0)
-      DieWithError("socket() failed");
-
-
+        DieWithError("socket() failed");
     /* construct server address structure */
-      memset(&tcpAddr, 0, sizeof(tcpAddr));
-      tcpAddr.sin_family = AF_INET;
-      tcpAddr.sin_addr.s_addr = inet_addr(tesAddr);
-      tcpAddr.sin_port = htons(tesPort);
-
-      return tcpsock_fd;
-
+    memset(&tcp_addr, '\0', sizeof(tcp_addr));
+    server_addr.sin_family = AF_INET;
+    printf("TEST: %s %d\n", tes_addr, tes_port);
+    server_addr.sin_addr.s_addr = inet_addr(tes_addr);
+    server_addr.sin_port = htons(tes_port);
+    printf("Socket addr\n");
+    if( connect(tcpsock_fd, (struct sockaddr*)&server_addr, sizeof(tcp_addr)) < 0)
+        DieWithError("OUCH");
+    return tcpsock_fd;
 }
