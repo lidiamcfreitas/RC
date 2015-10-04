@@ -10,11 +10,11 @@
 int main(int argc, char *argv[]){
     
     int sock_fd;
-    struct sockaddr_in servAddr, clntAddr;
-    unsigned int clntAddrLen;
-    unsigned short servPort;
+    struct sockaddr_in servAddr, clnt_addr;
+    unsigned int clnt_addr_len;
+    unsigned short serv_port;
     char buffer[255]; /* FIX: WHAT SIZE? */
-    int recvStringLen;
+    int recv_string_len;
     FILE *file_ptr;
     char topic_name[26];
     char topic_ip[16];
@@ -30,9 +30,9 @@ int main(int argc, char *argv[]){
     int num_TES = 0;
 
     if(argc==1){
-        servPort = DEFAULT_PORT;
+        serv_port = DEFAULT_PORT;
     } else if(argc == 3 && (strcmp(argv[1], "-p") == 0)){
-        servPort = atoi(argv[2]);
+        serv_port = atoi(argv[2]);
     } else {
     	fprintf(stderr, "Usage: %s [-p ECPname]\n", argv[0]);
     	exit(1);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
     memset(&servAddr, '\0', sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servAddr.sin_port = htons(servPort);
+    servAddr.sin_port = htons(serv_port);
 
     if(bind(sock_fd, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
     	DieWithError("bind() failed");
@@ -64,22 +64,22 @@ int main(int argc, char *argv[]){
     }
     fclose(file_ptr);    
 
-    clntAddrLen = sizeof(clntAddr);
+    clnt_addr_len = sizeof(clnt_addr);
     
     for(;;){ 
-        if((recvStringLen = recvfrom(sock_fd, buffer, sizeof(buffer), 0, (struct sockaddr*) &clntAddr, &clntAddrLen))<0)
+        if((recv_string_len = recvfrom(sock_fd, buffer, sizeof(buffer), 0, (struct sockaddr*) &clnt_addr, &clnt_addr_len))<0)
             DieWithError("recvfrom() failed");
-        buffer[recvStringLen] = '\0';
+        buffer[recv_string_len] = '\0';
 
         /* TQR */
-        if (strcmp("TQR\n",buffer)==0 && (recvStringLen==strlen("TQR\n")) /*because of possible double \0*/)
+        if (strcmp("TQR\n",buffer)==0 && (recv_string_len==strlen("TQR\n")) /*because of possible double \0*/)
         {
-            strcpy(to_send, "AWT T");
+            strcpy(to_send, "AWT ");
             sprintf(topic_name, "%d ", num_TES); /* using topic_name just to reuse variable */
             strcat(to_send, topic_name);
             if (num_TES==0)
             { /* No topics available */
-                if (sendto(sock_fd, "EOF\n", strlen("EOF\n"), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+                if (sendto(sock_fd, "EOF\n", strlen("EOF\n"), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             } else {
                 for(i=0; i<num_TES; i++)
@@ -89,16 +89,16 @@ int main(int argc, char *argv[]){
                     printf("%s\n", to_send);
                 }
                 to_send[strlen(to_send)-1] = '\n'; /* substitute ' ' for '\n'" */
-                if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+                if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             }
         }
         /* TER */
-        else if(!strncmp(buffer, "TER T", 5) && (recvStringLen==strlen("TER T1\n") || recvStringLen==strlen("TER T99\n"))){
-            sscanf(buffer, "TER T%d", &i);
+        else if(!strncmp(buffer, "TER ", 4) && (recv_string_len==strlen("TER 1\n") || recv_string_len==strlen("TER 99\n"))){
+            sscanf(buffer, "TER %d", &i);
             i--; /* 1...99 to 0..98 */
             if(i<0 || i>99){
-                if (sendto(sock_fd, "EOF\n", strlen("EOF\n"), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+                if (sendto(sock_fd, "EOF\n", strlen("EOF\n"), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             } else {
                 strcpy(to_send, "AWTES ");
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
                 strcat(to_send, topic_name);
                 strcat(to_send, "\n");
 
-                if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+                if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             }
         }
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
 
             if(sscanf(buffer,"%s %d %s %s %d",iqr, &sid, qid, topname, &score)!=5)
             {
-                if (sendto(sock_fd, "ERR\n", strlen("ERR\n"), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+                if (sendto(sock_fd, "ERR\n", strlen("ERR\n"), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             }
             fprintf(f, "%d %s %s %d", sid, qid, topname, score);
@@ -139,16 +139,16 @@ int main(int argc, char *argv[]){
             strcpy(to_send, "AWI ");
             strcat(to_send, qid);
 
-            if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+            if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                 DieWithError("sendto() failed");
         }
         /* else -> ERR*/
         else
         {
-            if (sendto(sock_fd, "ERR\n", strlen("ERR\n"), 0, (struct sockaddr*) &clntAddr, sizeof(clntAddr))<0)
+            if (sendto(sock_fd, "ERR\n", strlen("ERR\n"), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                 DieWithError("sendto() failed");
         }
-        printf("Received %sFrom %s:%d\n", buffer, inet_ntoa(clntAddr.sin_addr),ntohs(clntAddr.sin_port));
+        printf("Received %sFrom %s:%d\n", buffer, inet_ntoa(clnt_addr.sin_addr),ntohs(clnt_addr.sin_port));
 
     }
     close(sock_fd);
