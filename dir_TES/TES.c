@@ -35,13 +35,13 @@ int main(int argc, char *argv[]){
     char buffer[32];
     char* command;
 
-    typedef struct user_info{
-        long QID = 0;
-        int SID = 0;
+    typedef struct{
+        long QID;
+        int SID;
         char time_limit[19];
-    } user_info;
+    }user_info;
 
-    struct usr_info user_array[99];
+    user_info user_array[99];
     if(argc==5){
         server_port = atoi(argv[1]);
         ecp_name = argv[2];
