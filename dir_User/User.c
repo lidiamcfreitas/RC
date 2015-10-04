@@ -108,7 +108,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             DieWithError("sendto() failed");
 
         addr_size = sizeof(ecpAddr);
-        printf("TQR sent...\n");
+        printf("(Debug)TQR sent...\n");
 
         /* RECEIVE TOPICS */
         if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, 2476, 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
@@ -131,6 +131,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             /* print topics list */
             topic_name = strtok(NULL, " ");
             num_topics = atoi(topic_name);
+            printf("Received %d topics.\n", num_topics);
             for(i = 1; i<=num_topics;i++){
                 topic_name = strtok(NULL, " ");
                 printf("%d. %s\n", i, topic_name); /* TODO verify if name is larger than 25 */
@@ -149,7 +150,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 
         /* sending */
         scanf("%s", request_no);
-        printf("request of topic %s\n", request_no);
+        printf("Sending request of topic %s\n", request_no);
         strcpy(send_buffer, "TER ");
         strcat(send_buffer, request_no);
         strcat(send_buffer, "\n");
@@ -163,17 +164,17 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             DieWithError("recv() failed");
 
         rcv_buffer[msg_size] = '\0';
-        printf("(DEBUG)Received: %s", rcv_buffer);
+        printf("(DEBUG)Received: %s\n", rcv_buffer);
 
         if(strcmp("EOF\n", rcv_buffer)==0)
             printf("No topics to show.\n");
         else if(strcmp("ERR\n", rcv_buffer)==0)
             printf("Error reading TQR\n");
-        else if(msg_size != 28){
+        else if(msg_size > 28){
             printf("(DEBUG) msg_size: %d", msg_size);
         }
         else{ /*parse AWTES IPTES PORTES ... */
-            printf("parsing AWTES\n");
+            printf("(Debug)parsing AWTES\n");
             topic_name = strtok(rcv_buffer, " ");
 
             if(strcmp(topic_name,"AWTES")!=0)
@@ -187,18 +188,17 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 
 
             strcpy(send_buffer, "RQT 12345\n");
-            printf("Sending request to %d\n", tcpsock_fd);
+            printf("(Debug)Sending request to %d\n", tcpsock_fd);
             tcpwrite(tcpsock_fd, send_buffer, 10);
-            printf("Answer sent\n");
+            printf("(Debug)Answer sent\n");
             char* data = tcpread_nbytes(tcpsock_fd, 4);
-            printf("Received: %s\n", data);
+            printf("(Debug)Received: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 26, 1);
-            printf("QID: %s\n", data); 
+            printf("(Debug)QID: %s\n", data); 
             strcpy(QID, data);
             data = tcpread_nbytes(tcpsock_fd, 19);
-            printf("Time: %s\n", data);
+            printf("(Debug)Time: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 32, 1);
-            printf("Data: %s , converted: %d", data, atoi(data));
 
             long total_bytes = 0, file_size = atoi(data);
             int bytes_left, bytes_read, bytes_written;
@@ -207,7 +207,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             FILE* end_file = fopen("new_file.pdf", "w");
             char* ptr;
             ptr = &test_buffer[0];
-            printf("Starting file download. %lu bytes left", bytes_left);
+            printf("Starting file download. %lu bytes left\n", bytes_left);
             while(bytes_left > 0){
                 bytes_read = read(tcpsock_fd, ptr, 256);
                 bytes_left -= bytes_read;
@@ -287,11 +287,10 @@ int tcpinit(char* tes_addr, short unsigned tes_port){
     /* construct server address structure */
     memset(&tcp_addr, '\0', sizeof(tcp_addr));
     server_addr.sin_family = AF_INET;
-    printf("TEST: %s %d\n", tes_addr, tes_port);
+    printf("(Debug)Starting TCP connection on: %s %d\n", tes_addr, tes_port);
     server_addr.sin_addr.s_addr = inet_addr(tes_addr);
     server_addr.sin_port = htons(tes_port);
-    printf("Socket addr\n");
     if( connect(tcpsock_fd, (struct sockaddr*)&server_addr, sizeof(tcp_addr)) < 0)
-        DieWithError("OUCH");
+        DieWithError("connect() failed");
     return tcpsock_fd;
 }
