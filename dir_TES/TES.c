@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
         ecp_port = DEFAULT_PORT;
      }
 
-    printf("DEBUG: server_port=%d\n", server_port);a
+    printf("DEBUG: server_port=%d\n", server_port);
     printf("DEBUG: ecp_port=%d\n", ecp_port);
 
     if((sock_fd=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))<0)
@@ -201,27 +201,32 @@ int main(int argc, char *argv[]){
         /* RQT */
         else if(strcmp(read_buffer, "RQT ")==0){
             long QID, SID;
-            char time_limit[19];
+            char* time_limit;
             printf("(DEBUG) Processing RQT\n");
-            /*GET SID*/
 
+            /*GET SID*/
     	    if((user_info_ptr = fopen("dir_TES/user_info.txt", "a"))==NULL)
                 DieWithError("user_info fopen() failed");
             read_buffer = tcpread_nbytes(new_fd, 5);
             SID = atoi(read_buffer);
-            printf("DEBUG: SID is: %d\n", SID);
             fprintf(user_info_ptr, "%d ", SID);
+            printf("DEBUG: SID is: %d\n", SID);
 
             /*GENERATE QID*/
             srand (time(NULL));
             QID = rand() % 900000 + 100000;
-            printf("DEBUG: QID is: %ld\n", QID);
             fprintf(user_info_ptr, "%ld ", QID);
+            printf("DEBUG: QID is: %ld\n", QID);
 
             /*GET Current Time*/
-            strcpy(time_limit,get_time(600));
-            printf("DEBUG: Time limit is: %s\n", time_limit);
+
+            time_limit = get_time(600);
+            printf("%p\n", time_limit);
+            printf("asdas\n");
+            printf("%s\n",time_limit);
+            printf("2\n");
             fprintf(user_info_ptr, "%s\n", time_limit);
+            printf("DEBUG: Time limit is: %s\n", time_limit);
 	        fclose(user_info_ptr);
 
  	        printf("(Debug) Assessing file size\n");

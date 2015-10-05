@@ -65,13 +65,15 @@ void tcpwrite(int socket, char* buffer, int nbytes){
 char *get_time(int offset)
 {
     time_t rawtime;
+    printf("asda\n");
     struct tm * timeinfo;
     int len_time;
     char str_time[26];
     char *str_day_week, *str_month, *str_day, *str_hour, *str_min, *str_sec, *str_year;
-    char* str_output = (char *) malloc(19);
+    char* str_output = malloc(sizeof(char)*20);
     char aux[3];
 
+    printf("asda\n");
     time ( &rawtime );
     rawtime += offset;
     timeinfo = localtime ( &rawtime );
@@ -102,9 +104,10 @@ char *get_time(int offset)
     strcat(str_output, str_min);
     strcat(str_output, ":");
     strcat(str_output, str_sec);
-
+    str_output[19]='\0';
     // string format: DDMMMYYYY_HH:MM:SS
-
+    printf("wtf %s \n", str_output);
+    printf("%p \n", str_output);
     return str_output;
 }
 /*returns -1 if curr_time > time_limit, 0 if equal, 1 if time_limit>curr_time*/

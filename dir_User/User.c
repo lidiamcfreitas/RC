@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
 
 char tes_addr[16];
 unsigned short tes_port;
-char* QID; 
+char* QID;
 
 void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 {
@@ -159,7 +159,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 
         if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
             DieWithError("sendto() failed");
-	addr_size = sizeof(ecpAddr);
+        addr_size = sizeof(ecpAddr);
         /* receiving */
         if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
             DieWithError("recv() failed");
@@ -168,11 +168,12 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
         printf("(DEBUG)Received: %s\n", rcv_buffer);
 
         if(strcmp("EOF\n", rcv_buffer)==0)
-            printf("No topics to show.\n");
+            DieWithError("No topics to show.\n");
         else if(strcmp("ERR\n", rcv_buffer)==0)
-            printf("Error reading TQR\n");
+            DieWithError("Error reading TQR\n");
         else if(msg_size > 28){
             printf("(DEBUG) msg_size: %d", msg_size);
+            DieWithError("(DEBUG) msg_size too large");
         }
         else{ /*parse AWTES IPTES PORTES ... */
             printf("(Debug)parsing AWTES\n");
@@ -188,16 +189,16 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             tcpsock_fd = tcpinit(tes_addr, tes_port);
 
 
-            strcpy(send_buffer, "RQT 12345\n");
+            strncpy(send_buffer, "RQT 12345\n",10);
             printf("(Debug)Sending request to %d\n", tcpsock_fd);
             tcpwrite(tcpsock_fd, send_buffer, 10);
             printf("(Debug)Answer sent\n");
             char* data = tcpread_nbytes(tcpsock_fd, 4);
             printf("(Debug)Received: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 26, 1);
-            printf("(Debug)QID: %s\n", data); 
+            printf("(Debug)QID: %s\n", data);
             QID = malloc(sizeof(char)*strlen(data));
-	    strcpy(QID, data);
+            strcpy(QID, data);
             data = tcpread_nbytes(tcpsock_fd, 19);
             printf("(Debug)Time: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 32, 1);
@@ -224,7 +225,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             printf("Downloaded file with success!\n");
             fclose(end_file);
         }
-    }       /* -------------->>>>> FIX-ME <<<<<------------ needs to act on AWTES response */
+    }
 
     /* SUBMIT */
     else if(strcmp(command, "submit")==0){
@@ -253,27 +254,29 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             strcat(send_buffer,q4);
             strcat(send_buffer, " ");
             strcat(send_buffer,q5);
-	    strcat(send_buffer, "\n");
+            strcat(send_buffer, "\n");
             stringLen = strlen(send_buffer);
+            printf("DEBUG: Sending: %s\n", send_buffer);
 
             printf("%s", send_buffer);
             tcpwrite(tcpsock_fd, send_buffer, stringLen);
-	    char* response = tcpread_nbytes(tcpsock_fd,4);
+	        char* response = tcpread_nbytes(tcpsock_fd,4);
             if(strcmp(response, "AQS ")!=0){
-	    	printf("Wrong response from server\n");
-	   	printf("Message: %s \n", response);
-	    }else{
-	        printf("(DEBUG)Received AQS\n");
-		response = tcpread_until_char(tcpsock_fd, ' ',24, 1);
-		printf("(DEBUG)QID: %s\n", response);
-	    	response = tcpread_until_char(tcpsock_fd, ' ',4, 1);
-		printf("Score: %s\n", response);
-	    }
+                printf("Wrong response from server\n");
+                printf("Message: %s \n", response);
+	        }else{
+
+                printf("(DEBUG)Received AQS\n");
+                response = tcpread_until_char(tcpsock_fd, ' ',24, 1);
+                printf("(DEBUG)QID: %s\n", response);
+                response = tcpread_until_char(tcpsock_fd, ' ',4, 1);
+                printf("Score: %s\n", response);
+           }
 		/* -------------->>>>> FIX-ME <<<<<------------*/
-            
-		
+
+
             close(tcpsock_fd);
-	}
+	    }
         else
         {
             printf("Can't submit before requesting\n");
