@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
         ecp_port = DEFAULT_PORT;
      }
 
-    printf("DEBUG: server_port=%d\n", server_port);
+    printf("DEBUG: server_port=%d\n", server_port);a
     printf("DEBUG: ecp_port=%d\n", ecp_port);
 
     if((sock_fd=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))<0)
@@ -123,8 +123,6 @@ int main(int argc, char *argv[]){
         DieWithError("topics fopen() failed");
     if((answers_ptr = fopen("dir_TES/answers.txt", "r"))==NULL)
         DieWithError("answers fopen() failed");
-    if((user_info_ptr = fopen("dir_TES/user_info.txt", "a"))==NULL)
-        DieWithError("user_info fopen() failed");
 
     long file_size, block_size, bytes_sent, bytes_left;
     char* ptr;
@@ -136,11 +134,11 @@ int main(int argc, char *argv[]){
 
         read_buffer = tcpread_nbytes(new_fd, 4);
         printf("Received %sFrom %s:%d\n", read_buffer, inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
-        command = strtok(read_buffer, " ");
-        printf("Command: %s\n", command);
+        printf("Command: %s\n", read_buffer);
 
         /*RQS*/
-        if (strcmp(command, "RQS") == 0){
+
+        if (strcmp(read_buffer, "RQS ") == 0){
             char* user_answer;
             char answers[4];
             long QID;
@@ -201,12 +199,15 @@ int main(int argc, char *argv[]){
 
         }
         /* RQT */
-        else if(strcmp(command, "RQT")==0){
+        else if(strcmp(read_buffer, "RQT ")==0){
             long QID, SID;
             char time_limit[19];
-
+            printf("(DEBUG) Processing RQT\n");
             /*GET SID*/
-            read_buffer = tcpread_until_char(new_fd, "\n", 6, 1);
+
+    	    if((user_info_ptr = fopen("dir_TES/user_info.txt", "a"))==NULL)
+                DieWithError("user_info fopen() failed");
+            read_buffer = tcpread_nbytes(new_fd, 5);
             SID = atoi(read_buffer);
             printf("DEBUG: SID is: %d\n", SID);
             fprintf(user_info_ptr, "%d ", SID);
@@ -219,16 +220,19 @@ int main(int argc, char *argv[]){
 
             /*GET Current Time*/
             strcpy(time_limit,get_time(600));
-            printf("DEBUG: Time limit is: %ld\n", QID);
-            fprintf(user_info_ptr, "%s\n", QID);
+            printf("DEBUG: Time limit is: %s\n", time_limit);
+            fprintf(user_info_ptr, "%s\n", time_limit);
+	        fclose(user_info_ptr);
 
+ 	        printf("(Debug) Assessing file size\n");
             /*Transmission Stuff*/
             fseek(file_ptr, 0, SEEK_END);
             file_size = ftell(file_ptr);
             rewind(file_ptr);
-
+	        printf("(Debug) Preparing AQT response\n");
             strcpy(write_buffer, "AQT ");
-            strcat(write_buffer, QID);
+	        sprintf(buffer, "%ld", QID);
+            strcat(write_buffer, buffer);
             strcat(write_buffer, " ");
             strcat(write_buffer, time_limit);
             strcat(write_buffer, " ");
@@ -259,6 +263,8 @@ int main(int argc, char *argv[]){
                 ptr = &write_buffer[0];
                 printf("Sending file... %d bytes sent\n", file_size-bytes_left);
             }
+	    strcpy(write_buffer, "\n");
+	    tcpwrite(new_fd, write_buffer, 1);
         }
         else{
             printf("Can't Recognize Transmission");
@@ -266,7 +272,6 @@ int main(int argc, char *argv[]){
     }
     fclose(file_ptr);
     fclose(answers_ptr);
-    fclose(user_info_ptr);
     close(sock_fd);
     close(new_fd);
 }
