@@ -76,6 +76,9 @@ int main(int argc, char *argv[]){
     close(udpsock_fd);
 }
 
+char tes_addr[16];
+unsigned short tes_port;
+
 void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 {
     char command[8];
@@ -144,8 +147,6 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
         char send_buffer[10];
         char rcv_buffer[30];
         int msg_size = 0;
-        char tes_addr[16];
-        unsigned short tes_port;
         socklen_t addr_size;
 
         /* sending */
@@ -226,6 +227,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 
     /* SUBMIT */
     else if(strcmp(command, "submit")==0){
+        tcpsock_fd = tcpinit(tes_addr, tes_port);
         if(tcpsock_fd != 0 ){
             char q1[2], q2[2], q3[2], q4[2], q5[2];
             char send_buffer[46];
