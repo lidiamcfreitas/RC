@@ -82,11 +82,11 @@ int main(int argc, char *argv[]){
 
         read_buffer = tcpread_nbytes(new_fd, 4);
         printf("Received %sFrom %s:%d\n", read_buffer, inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
-        command = strtok(read_buffer, " ");
-        printf("Command: %s\n", command);
+        printf("Command: %s\n", read_buffer);
 
         /*RQS*/
-        if (strcmp(command, "RQS") == 0){
+	
+        if (strcmp(read_buffer, "RQS ") == 0){
             char* user_answer;
             char answers[4];
             int i = 0;
@@ -99,9 +99,6 @@ int main(int argc, char *argv[]){
                 printf("read: %ld %d %s \n", user_array[i].QID, user_array[i].SID, read_buffer);
             }
 
-
-
-
             fscanf(answers_ptr, "%s %s %s %s %s", answers[0],answers[1],answers[2],answers[3],answers[4]);
             for(i=0; i<5; i++){
                 printf("Answer to question %d: %s\n", i, user_answer);
@@ -112,12 +109,12 @@ int main(int argc, char *argv[]){
             }
         }
         /* RQT */
-        else if(strcmp(command, "RQT")==0){
+        else if(strcmp(read_buffer, "RQT ")==0){
             long QID, SID;
             char time_limit[19];
-
+            printf("(DEBUG) Processing RQT\n");
             /*GET SID*/
-            read_buffer = tcpread_until_char(new_fd, "\n", 6, 1);
+            read_buffer = tcpread_nbytes(new_fd, 5);
             SID = atoi(read_buffer);
             printf("DEBUG: SID is: %d\n", SID);
             fprintf(user_info_ptr, "%d ", SID);
@@ -130,16 +127,17 @@ int main(int argc, char *argv[]){
 
             /*GET Current Time*/
             strcpy(time_limit,get_time(600));
-            printf("DEBUG: Time limit is: %ld\n", QID);
-            fprintf(user_info_ptr, "%s\n", QID);
-
+            printf("DEBUG: Time limit is: %s\n", time_limit);
+            fprintf(user_info_ptr, "%s\n", time_limit);
+	    printf("(Debug) Assessing file size\n");
             /*Transmission Stuff*/
             fseek(file_ptr, 0, SEEK_END);
             file_size = ftell(file_ptr);
             rewind(file_ptr);
-
+	    printf("(Debug) Preparing AQT response\n");
             strcpy(write_buffer, "AQT ");
-            strcat(write_buffer, QID);
+	    sprintf(buffer, "%ld", QID);
+            strcat(write_buffer, buffer);
             strcat(write_buffer, " ");
             strcat(write_buffer, time_limit);
             strcat(write_buffer, " ");
@@ -170,6 +168,8 @@ int main(int argc, char *argv[]){
                 ptr = &write_buffer[0];
                 printf("Sending file... %d bytes sent\n", file_size-bytes_left);
             }
+	    strcpy(write_buffer, "\n");
+	    tcpwrite(new_fd, write_buffer, 1);
         }
         else{
             printf("Can't Recognize Transmission");

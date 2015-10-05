@@ -78,6 +78,7 @@ int main(int argc, char *argv[]){
 
 char tes_addr[16];
 unsigned short tes_port;
+char* QID; 
 
 void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 {
@@ -85,7 +86,6 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
     char *topic_name;
     int tcpsock_fd = 0;
     struct sockaddr_in tcpAddr;
-    char* QID;
     memset(&command, '\0', sizeof(command));
 
     printf("> ");
@@ -159,7 +159,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 
         if(sendto(udpsock_fd, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
             DieWithError("sendto() failed");
-
+	addr_size = sizeof(ecpAddr);
         /* receiving */
         if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
             DieWithError("recv() failed");
@@ -196,7 +196,8 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             printf("(Debug)Received: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 26, 1);
             printf("(Debug)QID: %s\n", data); 
-            strcpy(QID, data);
+            QID = malloc(sizeof(char)*strlen(data));
+	    strcpy(QID, data);
             data = tcpread_nbytes(tcpsock_fd, 19);
             printf("(Debug)Time: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 32, 1);
@@ -238,7 +239,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
 
             scanf("%s %s %s %s %s", q1, q2, q3, q4, q5);
 
-            strcat(send_buffer,"RQS ");
+            strcpy(send_buffer,"RQS ");
             strcat(send_buffer,SID);
             strcat(send_buffer, " ");
             strcat(send_buffer,QID);
@@ -252,13 +253,27 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             strcat(send_buffer,q4);
             strcat(send_buffer, " ");
             strcat(send_buffer,q5);
+	    strcat(send_buffer, "\n");
             stringLen = strlen(send_buffer);
 
             printf("%s", send_buffer);
             tcpwrite(tcpsock_fd, send_buffer, stringLen);
-
-            /* -------------->>>>> FIX-ME <<<<<------------*/
-        }
+	    char* response = tcpread_nbytes(tcpsock_fd,4);
+            if(strcmp(response, "AQS ")!=0){
+	    	printf("Wrong response from server\n");
+	   	printf("Message: %s \n", response);
+	    }else{
+	        printf("(DEBUG)Received AQS\n");
+		response = tcpread_until_char(tcpsock_fd, ' ',24, 1);
+		printf("(DEBUG)QID: %s\n", response);
+	    	response = tcpread_until_char(tcpsock_fd, ' ',4, 1);
+		printf("Score: %s\n", response);
+	    }
+		/* -------------->>>>> FIX-ME <<<<<------------*/
+            
+		
+            close(tcpsock_fd);
+	}
         else
         {
             printf("Can't submit before requesting\n");
