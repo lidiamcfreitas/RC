@@ -34,9 +34,9 @@ char* tcpread_until_char(int socket, char c, int max_length, int terminate){
 
 char* tcpread_nbytes(int socket, int bytes){
     int bytes_left = bytes, bytes_read;
-    char* buffer = malloc(sizeof(char)*bytes);
+    char* buffer = malloc(sizeof(char)*(bytes+1));
     char* ptr;
-    memset(buffer, '\0', bytes);
+    memset(buffer, '\0', bytes+1);
     ptr = &buffer[0];
     printf("reading %d bytes...\n", bytes);
     while( bytes_left > 0 ){
@@ -46,6 +46,7 @@ char* tcpread_nbytes(int socket, int bytes){
         bytes_left -= bytes_read;
         ptr += bytes_read;
     }
+    printf("inside tcpread: %s \n", buffer);
     return buffer;
 }
 

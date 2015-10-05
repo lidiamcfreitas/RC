@@ -130,15 +130,15 @@ int main(int argc, char *argv[]){
         listen(sock_fd, 5);
 
         client_addr_len = sizeof(client_addr);
-        new_fd = accept(sock_fd, (struct sockaddr*)&client_addr, &client_addr_len);
-
+        new_fd = accept(sock_fd, (struct sockaddr*)&client_addr, &client_addr_len); 
         read_buffer = tcpread_nbytes(new_fd, 4);
-        printf("Received %sFrom %s:%d\n", read_buffer, inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
+        printf("Received %s From %s:%d\n", read_buffer, inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
         printf("Command: %s\n", read_buffer);
 
         /*RQS*/
 
         if (strcmp(read_buffer, "RQS ") == 0){
+            printf("Processing rqs\n");
             char* user_answer;
             char answers[4];
             long QID;
@@ -219,7 +219,6 @@ int main(int argc, char *argv[]){
             printf("DEBUG: QID is: %ld\n", QID);
 
             /*GET Current Time*/
-
             time_limit = get_time(600);
             printf("%p\n", time_limit);
             printf("asdas\n");
@@ -269,7 +268,8 @@ int main(int argc, char *argv[]){
                 printf("Sending file... %d bytes sent\n", file_size-bytes_left);
             }
 	    strcpy(write_buffer, "\n");
-	    tcpwrite(new_fd, write_buffer, 1);
+        printf("%s\n", read_buffer);
+        tcpwrite(new_fd, write_buffer, 1);
         }
         else{
             printf("Can't Recognize Transmission");
