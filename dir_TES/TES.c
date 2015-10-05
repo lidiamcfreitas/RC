@@ -69,8 +69,6 @@ int main(int argc, char *argv[]){
         DieWithError("topics fopen() failed");
     if((answers_ptr = fopen("dir_TES/answers.txt", "r"))==NULL)
         DieWithError("answers fopen() failed");
-    if((user_info_ptr = fopen("dir_TES/user_info.txt", "a"))==NULL)
-        DieWithError("user_info fopen() failed");
 
     long file_size, block_size, bytes_sent, bytes_left;
     char* ptr;
@@ -114,7 +112,10 @@ int main(int argc, char *argv[]){
             char time_limit[19];
             printf("(DEBUG) Processing RQT\n");
             /*GET SID*/
-            read_buffer = tcpread_nbytes(new_fd, 5);
+            
+    	    if((user_info_ptr = fopen("dir_TES/user_info.txt", "a"))==NULL)
+                DieWithError("user_info fopen() failed");
+	    read_buffer = tcpread_nbytes(new_fd, 5);
             SID = atoi(read_buffer);
             printf("DEBUG: SID is: %d\n", SID);
             fprintf(user_info_ptr, "%d ", SID);
@@ -129,7 +130,9 @@ int main(int argc, char *argv[]){
             strcpy(time_limit,get_time(600));
             printf("DEBUG: Time limit is: %s\n", time_limit);
             fprintf(user_info_ptr, "%s\n", time_limit);
-	    printf("(Debug) Assessing file size\n");
+	    fclose(user_info_ptr);
+	    
+ 	    printf("(Debug) Assessing file size\n");
             /*Transmission Stuff*/
             fseek(file_ptr, 0, SEEK_END);
             file_size = ftell(file_ptr);
@@ -148,7 +151,7 @@ int main(int argc, char *argv[]){
             printf("Sending %s , size %d, file_size: %d\n", write_buffer, message_size,file_size);
             tcpwrite(new_fd, write_buffer, message_size);
             /*Copiar código, mandar write_buffer pelo socket*/
-
+	   
             bytes_left = file_size;
             memset(write_buffer, '\0', 256);
             ptr = &write_buffer[0];
@@ -177,7 +180,6 @@ int main(int argc, char *argv[]){
     }
     fclose(file_ptr);
     fclose(answers_ptr);
-    fclose(user_info_ptr);
     close(sock_fd);
     close(new_fd);
 }
