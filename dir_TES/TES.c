@@ -90,13 +90,17 @@ int main(int argc, char *argv[]){
             char* user_answer;
             char answers[4];
             int i = 0;
-            long QID, SID;
+            long QID;
+            int SID;
 
-            while(fscanf(user_info_ptr, "%ld %d %s", QID, SID, read_buffer)==3){
+            while(fscanf(user_info_ptr, "%ld %d %s", user_array[i].QID, user_array[i].SID, read_buffer)==3){
                 strcpy(user_array[i].time_limit, read_buffer);
                 i++;
-                printf("read: %ld %d %s \n", QID, SID, read_buffer);
+                printf("read: %ld %d %s \n", user_array[i].QID, user_array[i].SID, read_buffer);
             }
+
+
+
 
             fscanf(answers_ptr, "%s %s %s %s %s", answers[0],answers[1],answers[2],answers[3],answers[4]);
             for(i=0; i<5; i++){
