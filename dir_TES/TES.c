@@ -145,25 +145,26 @@ int main(int argc, char *argv[]){
             int SID, found = 0, score;
 
             /*GET QID and SID from TCP*/
-            read_buffer = tcpread_until_char(new_fd, "\n", 40, 1);
+            read_buffer = tcpread_until_char(new_fd, '\n', 40, 1);
+            printf("(DEBUG)Received TCP: %s\n", read_buffer);
             user_answer = strtok(read_buffer, " ");
             QID = atol(user_answer);
             printf("Read: %ld\n", QID);
-            user_answer = strtok(NULL, "\n");
+            user_answer = strtok(NULL, " ");
             SID = atoi(user_answer);
             printf("Read: %d\n", SID);
 
             i=0;
             /* read user_info_ptr*/
-            while(fscanf(user_info_ptr, "%ld %d %s", user_array[i].QID, user_array[i].SID, user_answer)==3){
+            while(fscanf(user_info_ptr, "%ld %d %s", &user_array[i].QID, &user_array[i].SID, user_answer)==3){
                 strcpy(user_array[i].time_limit, user_answer);
                 user_array[i].def = 1;
                 i++;
                 printf("read: %ld %d %s \n", user_array[i].QID, user_array[i].SID, user_answer);
             }
-
+            printf("read user info\n");
             /* search user_array for received user */
-            for(i=0; user_array[i].def != 0 && i< 99; i++ ){
+           for(i=0; user_array[i].def != 0 && i< 99; i++ ){
                 if(strcmp(user_array[i].SID, SID)==0 && strcmp(user_array[i].QID, QID)==0){
                     printf("DEBUG: Match found on user: %d", user_array[i].SID);
                         if(compare_time(user_array[i].time_limit, get_time())<0)
@@ -171,31 +172,43 @@ int main(int argc, char *argv[]){
                     found = 1;
                 }
             }
+            printf("search user array done\n");
             /*FIX ME score -1 se timeout -2 else normal*/
-            if(found == 0)
-                DieWithError("User SID not found");
-
+            //if(found == 0)
+              //  DieWithError("User SID not found");
+    
             /*check answers and calculate score*/
-            fscanf(answers_ptr, "%s %s %s %s %s", answers[0],answers[1],answers[2],answers[3],answers[4]);
+            printf("STOP, hammer time \n ");
+            fscanf(answers_ptr, "%c %c %c %c %c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
+            printf("The right answers are %c %c %c %c %c", answers[0],answers[1],answers[2],answers[3],answers[4]);        
             for(i=0; i<5; i++){
-                printf("Answer to question %d: %s\n", i, user_answer);
-                command = strtok(NULL, " ");
-                if(strcmp(command, answers[i])!=0)
-                    printf("Wrong answer on %d\n", i);
-                else{
+                user_answer = strtok(NULL, " ");
+                printf("Question %d : is %c == %c ? \n", i, user_answer[0], answers[i]);
+                if(user_answer[0] == answers[i]){
                     printf("Right answer on %d\n", i);
                     score += 20;
                 }
+                else{
+                    printf("Wrong answer on %d\n", i);
+                }
             }
-
+            printf("Score calculated: %d\n", score);
+            memset(write_buffer, '\0', 256);
             strcpy(write_buffer, "AQS ");
-            strcat(write_buffer, QID);
+            memset(buffer, '\0', 32);
+            sprintf(buffer, "%ld", QID);
+            printf("TEST: %s\n", buffer);
+            strcat(write_buffer, buffer);
             strcat(write_buffer, " ");
-            strcat(write_buffer, score);
+            memset(buffer, '\0', 32);
+            sprintf(buffer, "%d", score);
+            printf("TEST: %s\n", buffer);
+            strcat(write_buffer, buffer);
+            strcat(write_buffer, "\n");
             size_t message_size = strlen(write_buffer)*sizeof(char);
-            printf("Sending %s , size %d, file_size: %d\n", write_buffer, message_size,file_size);
+            printf("Sending %s", write_buffer);
             tcpwrite(new_fd, write_buffer, message_size);
-
+            
 
         }
         /* RQT */

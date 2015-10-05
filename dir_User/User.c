@@ -269,8 +269,17 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
                 printf("(DEBUG)Received AQS\n");
                 response = tcpread_until_char(tcpsock_fd, ' ',24, 1);
                 printf("(DEBUG)QID: %s\n", response);
-                response = tcpread_until_char(tcpsock_fd, ' ',4, 1);
+                response = tcpread_until_char(tcpsock_fd, '\n',5, 1);
+                int j = 0, found = 0;
+                for( j = 0; j < 5; j++){
+                    if(response[j] == '\n')
+                        found = 1;
+                    printf("char: %c --", response[j]);
+                }
+                if(found == 0)
+                    DieWithError("Received incorrect message from server");
                 printf("Score: %s\n", response);
+
            }
 		/* -------------->>>>> FIX-ME <<<<<------------*/
 

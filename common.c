@@ -22,7 +22,7 @@ char* tcpread_until_char(int socket, char c, int max_length, int terminate){
         ptr += bytes_read;
         bytes_read = read(socket, ptr, 1);
         if(bytes_read<0)
-            DieWithError("Error reading on TCP connection. Qutting\n");
+            DieWithError("Error reading on TCP connection. Quitting\n");
         read_c = ptr[0];
         i++;
     }
