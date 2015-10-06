@@ -221,6 +221,8 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
                 free(test_buffer);
                 test_buffer = malloc(sizeof(char)*256);
                 ptr = &test_buffer[0];
+                if(bytes_read != 0)
+                    printf("read %d , wrote %d, left %d\n", bytes_read, bytes_written, bytes_left);
             }
             printf("Downloaded file with success!\n");
             fclose(end_file);
