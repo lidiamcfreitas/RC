@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <errno.h>
 
 #define DEFAULT_PORT 58026 
 #define MAX_TES 99
