@@ -34,11 +34,13 @@ int main(int argc, char *argv[]){
     struct hostent *ecphostptr;
     int i;
     pid_t pid;
-
+    
+    /*Initializing user array*/
     for(i = 0; i<99 ; i++){
         user_array[i].def = 0;
     }
-
+    
+    /* Argument parsing*/
     if( argc < 1 || argc > 7 || argc % 2 != 1 ) /* test for correct number of arguments */
     {
         fprintf(stderr, "Usage: %s [-p TESport] [-n ECPname] [-e ECPport]\n", argv[0]);
@@ -95,8 +97,10 @@ int main(int argc, char *argv[]){
         ecp_port = DEFAULT_PORT;
     }
 
-    printf("DEBUG: server_port=%d\n", server_port);
-    printf("DEBUG: ecp_port=%d\n", ecp_port);
+    /* End of argument parsing*/
+    
+    printf("(DEBUG)server_port=%d\n", server_port);
+    printf("(DEBUG)ecp_port=%d\n", ecp_port);
 
     if((sock_fd=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))<0)
         DieWithError("socket() failed");
@@ -112,7 +116,6 @@ int main(int argc, char *argv[]){
 
     
     /* CHANGE */
-
     char * test;
     test = random_file();
     printf("%s", test);
@@ -166,7 +169,7 @@ void process_request(int new_fd){
 
     read_buffer = tcpread_nbytes(new_fd, 4);
     printf("Received %s From %s:%d\n", read_buffer, inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
-    printf("Command: %s\n", read_buffer); 
+    printf("(DEBUG)Command: %s\n", read_buffer); 
     long file_size, block_size, bytes_sent, bytes_left;
 
     /*RQS*/
@@ -179,6 +182,7 @@ void process_request(int new_fd){
         /*GET QID and SID from TCP*/
         read_buffer = tcpread_until_char(new_fd, '\n', 40, 1);
         printf("(DEBUG)Received TCP: %s\n", read_buffer);
+        
         user_answer = strtok(read_buffer, " ");
         QID = atol(user_answer);
         user_answer = strtok(NULL, " ");
@@ -191,6 +195,7 @@ void process_request(int new_fd){
             user_array[i].def = 1;
             i++;
         }
+
         /* search user_array for received user */
         for(i=0; user_array[i].def != 0 && i< 99; i++ ){
             if(strcmp(user_array[i].SID, SID)==0 && strcmp(user_array[i].QID, QID)==0){
@@ -201,12 +206,13 @@ void process_request(int new_fd){
             }
         }
         /*FIX ME score -1 se timeout -2 else normal*/
+        /*Servidor deveria continuar ligado se o SID for mal? talvez so ignorar o request*/
         //if(found == 0)
         //  DieWithError("User SID not found");
 
-        /*check answers and calculate score*/
+        /*Check answers and calculate score*/
         fscanf(answers_ptr, "%c %c %c %c %c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
-        printf("The right answers are %c %c %c %c %c", answers[0],answers[1],answers[2],answers[3],answers[4]);        
+        printf("(DEBUG)The right answers are %c %c %c %c %c", answers[0],answers[1],answers[2],answers[3],answers[4]);        
         score = 0;
         for(i=0; i<5; i++){
             user_answer = strtok(NULL, " ");
@@ -218,7 +224,8 @@ void process_request(int new_fd){
                 printf("Wrong answer on %d\n", i);
             }
         }
-        printf("Score calculated: %d\n", score);
+        /*Preparing AQS response*/
+        printf("Score calculated: %d / 100 \n", score);
         memset(write_buffer, '\0', 256);
         strcpy(write_buffer, "AQS ");
         memset(buffer, '\0', 32);
@@ -232,7 +239,7 @@ void process_request(int new_fd){
         strcat(write_buffer, buffer);
         strcat(write_buffer, "\n");
         size_t message_size = strlen(write_buffer)*sizeof(char);
-        printf("Sending %s", write_buffer);
+        printf("(DEBUG)Sending %s", write_buffer);
         tcpwrite(new_fd, write_buffer, message_size);
 
 
@@ -241,32 +248,34 @@ void process_request(int new_fd){
     else if(strcmp(read_buffer, "RQT ")==0){
         long QID, SID;
         char* time_limit;
-        printf("(DEBUG) Processing RQT\n");
+        printf("(DEBUG)Processing RQT\n");
 
         /*GET SID*/
         read_buffer = tcpread_nbytes(new_fd, 5);
         SID = atoi(read_buffer);
         fprintf(user_info_ptr, "%d ", SID);
-        printf("DEBUG: SID is: %d\n", SID);
+        printf("(DEBUG)SID is: %d\n", SID);
 
         /*GENERATE QID*/
         srand (time(NULL));
         QID = rand() % 900000 + 100000;
         fprintf(user_info_ptr, "%ld ", QID);
-        printf("DEBUG: QID is: %ld\n", QID);
+        printf("(DEBUG)QID is: %ld\n", QID);
 
         /*GET Current Time*/
         time_limit = get_time(600);
         fprintf(user_info_ptr, "%s\n", time_limit);
-        printf("DEBUG: Time limit is: %s\n", time_limit);
+        printf("(DEBUG)Time limit is: %s\n", time_limit);
         fclose(user_info_ptr);
 
-        printf("(Debug) Assessing file size\n");
-        /*Transmission Stuff*/
+        printf("(DEBUG)Assessing file size\n");
+        /*Finding file size*/ 
         fseek(file_ptr, 0, SEEK_END);
         file_size = ftell(file_ptr);
         rewind(file_ptr);
-        printf("(Debug) Preparing AQT response\n");
+
+        /*Preparing AQT response*/
+        printf("(DEBUG)Preparing AQT response\n");
         strcpy(write_buffer, "AQT ");
         sprintf(buffer, "%ld", QID);
         strcat(write_buffer, buffer);
@@ -276,35 +285,24 @@ void process_request(int new_fd){
         sprintf(buffer, "%d", file_size);
         strcat(write_buffer, buffer);
         strcat(write_buffer, " ");
+        
         size_t message_size = strlen(write_buffer)*sizeof(char);
-        printf("Sending %s , size %d, file_size: %d\n", write_buffer, message_size,file_size);
+        printf("(DEBUG)Sending message before file transfer: %s , size %d, file_size: %d\n", write_buffer, message_size,file_size);
         tcpwrite(new_fd, write_buffer, message_size);
 
-        /*Copiar código, mandar write_buffer pelo socket*/
+        /*Streaming file through TCP*/
         bytes_left = file_size;
         memset(write_buffer, '\0', 256);
         ptr = &write_buffer[0];
-        printf("Sending file. %d bytes left\n", bytes_left);
+        printf("(DEBUG)Sending file. %d bytes left\n", bytes_left);
         while(bytes_left > 0){
             block_size = fread(write_buffer, sizeof(char), 256, file_ptr);
             bytes_left -= block_size;
             tcpwrite(new_fd, write_buffer, block_size); 
-            //printf("%d bytes left\n", bytes_left);
-            /* while(block_size > 0){
-               bytes_sent = write(new_fd, ptr, block_size);
-               if(write < 0){
-               printf("Error sending file");
-               break;
-               }
-               block_size -= bytes_sent;
-               ptr += bytes_sent;
-               }
-               ptr = &write_buffer[0];*/
-            //            printf("Sending file... %d bytes sent\n", file_size-bytes_left);
         }
         strcpy(write_buffer, "\n");
         tcpwrite(new_fd, write_buffer, 1);
-        printf("0 bytes left.\nFile sent successfuly!\n");
+        printf("(DEBUG)File sent successfuly!\n");
         sleep(1);
     }
     else{

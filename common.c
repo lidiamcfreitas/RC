@@ -1,14 +1,21 @@
+/* common functions used in various files */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 
+/*Prints error message and exits */
 void DieWithError(char *errorMessage)
 {
     perror(errorMessage);
     exit(1);
 }
 
+/*
+  Reads from socket ( TCP file descriptor ) until character c is found, searching at maximum max_length bytes. 
+  Terminates the string on the character found if terminate is true 
+*/
 char* tcpread_until_char(int socket, char c, int max_length, int terminate){
     char* buffer = malloc(sizeof(char)*max_length);
     char* ptr;
@@ -31,7 +38,10 @@ char* tcpread_until_char(int socket, char c, int max_length, int terminate){
     ptr[0] = '\0';
     return buffer;
 }
-
+/*
+  Reads from socket ( TCP file descriptor ) the number of bytes specified in argument 'bytes'.
+  Returns unterminated string
+*/
 char* tcpread_nbytes(int socket, int bytes){
     int bytes_left = bytes, bytes_read;
     char* buffer = malloc(sizeof(char)*(bytes+1));
@@ -50,6 +60,9 @@ char* tcpread_nbytes(int socket, int bytes){
     return buffer;
 }
 
+/* 
+  Writes nbytes bytes to socket (TCP fd) read from buffer
+*/
 void tcpwrite(int socket, char* buffer, int nbytes){
     char* ptr;
     int bytes_left = nbytes, bytes_written;
@@ -63,6 +76,9 @@ void tcpwrite(int socket, char* buffer, int nbytes){
     }
 }
 
+/*
+  Gets current time, with added offset, and returns a string with the necessary format
+*/
 char *get_time(int offset)
 {
     time_t rawtime;
@@ -111,8 +127,11 @@ char *get_time(int offset)
     printf("%p \n", str_output);
     return str_output;
 }
-/*returns -1 if curr_time > time_limit, 0 if equal, 1 if time_limit>curr_time*/
 
+/*
+  Expects two date strings on speciefied format and compares them.
+  Returns -1 if curr_time > time_limit, 0 if equal, 1 if time_limit>curr_time
+*/
 int compare_time(char * time_limit, char * curr_time){
     char* limit, curr;
     char* save_limit, save_curr;
@@ -148,7 +167,10 @@ int compare_time(char * time_limit, char * curr_time){
     }
 }
 
-/*returns -1 if curr > time, 0 if equal, 1 if limit>curr*/
+/*
+  Helper function for compare_time
+  returns -1 if curr > time, 0 if equal, 1 if limit>curr
+*/
 int compare_date(char* time_limit, char* curr_time){
     char limit[5], curr[5];
     char* save_limit, save_curr;
@@ -209,8 +231,10 @@ int compare_date(char* time_limit, char* curr_time){
     return 0;
 }
 
-/*returns -1 if curr > time, 0 if equal, 1 if limit>curr*/
-/*compare hour minute second*/
+/*
+  Helper function to compare hms
+  returns -1 if curr > time, 0 if equal, 1 if limit>curr
+*/
 int compare_hms(char* time_limit, char* curr_time){
     char* limit, curr;
     char* save_limit, save_curr;
@@ -294,6 +318,9 @@ int month_to_int(char* month){
 
 }
 
+/*
+  Selects random file from questionnaires on folder
+*/
 char *random_file(){
 
     FILE *ifp, *tfp;
