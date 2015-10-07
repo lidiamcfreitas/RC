@@ -72,10 +72,18 @@ int main(int argc, char *argv[]){
     ecpAddr.sin_port = htons(ecpPort);
 
 
-    /* create SID */
-    srand (time(NULL));
-    sid = rand() % 90000 + 10000;
-
+    /* get SID */
+    //srand (time(NULL));
+    //sid = rand() % 90000 + 10000;
+    
+    printf("Welcome. Before you can answer any questionnaire you need to provide your student number(5 digits).\nSID > ");
+    scanf("%d", &sid);
+    if(sid < 10000 || sid > 99999){
+        printf("Wrong format for student number provided.\n");
+        exit(1);
+    }
+    printf("You are now identified as %d.\n", sid);
+    
     for(;;){
         process_command(ecpAddr, udpsock_fd, sid);
     }

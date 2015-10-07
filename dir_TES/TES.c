@@ -210,7 +210,7 @@ void process_request(int new_fd){
         //  DieWithError("User SID not found");
 
         /*Check answers and calculate score*/
-        fscanf(answers_ptr, "%c %c %c %c %c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
+        fscanf(answers_ptr, "%c\n%c\n%c\n%c\n%c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
         printf("(DEBUG)The right answers are %c %c %c %c %c\n", answers[0],answers[1],answers[2],answers[3],answers[4]);        
         score = 0;
         for(i=0; i<5; i++){
@@ -240,7 +240,8 @@ void process_request(int new_fd){
         size_t message_size = strlen(write_buffer)*sizeof(char);
         printf("(DEBUG)Sending %s", write_buffer);
         tcpwrite(new_fd, write_buffer, message_size);
-
+        
+        
 
     }
     /* RQT */
