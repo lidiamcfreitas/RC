@@ -12,10 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <signal.h>
+#include <errno.h>
 
 #define DEFAULT_PORT 58026 
 #define MAX_TES 99
