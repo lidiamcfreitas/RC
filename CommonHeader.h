@@ -31,4 +31,5 @@ char* tcpread_nbytes(int socket, int bytes);
 
 void tcpwrite(int socket, char* buffer, int nbytes); 
 
+char *random_file();
 #endif /* defined(____User__) */
