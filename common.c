@@ -13,8 +13,8 @@ void DieWithError(char *errorMessage)
 }
 
 /*
-  Reads from socket ( TCP file descriptor ) until character c is found, searching at maximum max_length bytes. 
-  Terminates the string on the character found if terminate is true 
+  Reads from socket ( TCP file descriptor ) until character c is found, searching at maximum max_length bytes.
+  Terminates the string on the character found if terminate is true
 */
 char* tcpread_until_char(int socket, char c, int max_length, int terminate){
     char* buffer = malloc(sizeof(char)*max_length);
@@ -58,7 +58,7 @@ char* tcpread_nbytes(int socket, int bytes){
     return buffer;
 }
 
-/* 
+/*
   Writes nbytes bytes to socket (TCP fd) read from buffer
 */
 void tcpwrite(int socket, char* buffer, int nbytes){
@@ -127,8 +127,8 @@ char *get_time(int offset)
   Returns -1 if curr_time > time_limit, 0 if equal, 1 if time_limit>curr_time
 */
 int compare_time(char * time_limit, char * curr_time){
-    char* limit, curr;
-    char* save_limit, save_curr;
+    char* limit, *curr;
+    char* save_limit, *save_curr;
 
     int result;
 
@@ -136,13 +136,15 @@ int compare_time(char * time_limit, char * curr_time){
     limit = strtok_r(time_limit, "_", &save_limit);
     printf("into: %s\n", limit);
 
-    printf("DEBUG: Broke %s", curr_time);
+    printf("before curr_time break \n");
+    printf("DEBUG: Broke %s\n", curr_time);
     curr = strtok_r(curr_time, "_", &save_curr);
     printf("into: %s\n", curr);
+    printf("after curr_time break \n");
 
-
+    printf("Calling compare_date\n" );
     result = compare_date(limit, curr);
-    printf("DEBUG: compare_date returned: %d", result);
+    printf("DEBUG: compare_date returned: %d\n", result);
     if(result == - 1 || result == 1)
         return result;
     else{
@@ -154,9 +156,9 @@ int compare_time(char * time_limit, char * curr_time){
         printf("DEBUG: Broke %s", curr_time);
         curr = strtok_r(NULL, "_", &save_curr);
         printf("into: %s\n", curr);
-
+        printf("Calling compare_hms\n" );
         result = compare_hms(limit, curr);
-        printf("DEBUG: compare_hms returned: %d", result);
+        printf("DEBUG: compare_hms returned: %d\n", result);
         return result;
     }
 }
@@ -167,7 +169,7 @@ int compare_time(char * time_limit, char * curr_time){
 */
 int compare_date(char* time_limit, char* curr_time){
     char limit[5], curr[5];
-    char* save_limit, save_curr;
+    char* save_limit, *save_curr;
     int result, i;
 
     /*years*/
@@ -230,15 +232,17 @@ int compare_date(char* time_limit, char* curr_time){
   returns -1 if curr > time, 0 if equal, 1 if limit>curr
 */
 int compare_hms(char* time_limit, char* curr_time){
-    char* limit, curr;
-    char* save_limit, save_curr;
+    char* limit, *curr;
+    char* save_limit, *save_curr;
     int result, i;
 
     for(i=0; i<3; i++){
+        printf("DEBUG: Broke %s",time_limit);
         limit = strtok_r(time_limit, ":", &save_limit);
-        printf("DEBUG: Broke %s into: %s\n", time_limit, limit);
+        printf("into: %s\n", time_limit, limit);
+        printf("DEBUG: Broke %s",time_limit);
         curr = strtok_r(curr_time, ":", &save_limit);
-        printf("DEBUG: Broke %s into: %s\n", curr_time, curr);
+        printf("into: %s\n", curr_time, curr);
         result = atoi(limit)-atoi(curr);
         if(result == 1 || result == -1)
             return result;
@@ -260,53 +264,53 @@ int compare_hms(char* time_limit, char* curr_time){
     DEC = 12*/
 int month_to_int(char* month){
 
-    if(strcmp("JAN", month)==0){
-        printf("DEBUG: Returning JAN(1) for input: %s", month);
+    if(strcmp("Jan", month)==0){
+        printf("DEBUG: Returning JAN(1) for input: %s\n", month);
         return 1;
     }
 
-    if(strcmp("FEB", month)==0){
-        printf("DEBUG: Returning FEB(2) for input: %s", month);
+    if(strcmp("Feb", month)==0){
+        printf("DEBUG: Returning FEB(2) for input: %s\n", month);
         return 2;
     }
-    if(strcmp("MAR", month)==0){
-        printf("DEBUG: Returning MAR(3) for input: %s", month);
+    if(strcmp("Mar", month)==0){
+        printf("DEBUG: Returning MAR(3) for input: %s\n", month);
         return 3;
     }
-    if(strcmp("APR", month)==0){
-        printf("DEBUG: Returning APR(4) for input: %s", month);
+    if(strcmp("Apr", month)==0){
+        printf("DEBUG: Returning APR(4) for input: %s\n", month);
         return 4;
     }
-    if(strcmp("MAY", month)==0){
-        printf("DEBUG: Returning MAY(5) for input: %s", month);
+    if(strcmp("May", month)==0){
+        printf("DEBUG: Returning MAY(5) for input: %s\n", month);
         return 5;
     }
-    if(strcmp("JUN", month)==0){
-        printf("DEBUG: Returning JUN(6) for input: %s", month);
+    if(strcmp("Jun", month)==0){
+        printf("DEBUG: Returning JUN(6) for input: %s\n", month);
         return 6;
     }
-    if(strcmp("JUL", month)==0){
-        printf("DEBUG: Returning JUL(7) for input: %s", month);
+    if(strcmp("Jul", month)==0){
+        printf("DEBUG: Returning JUL(7) for input: %s\n", month);
         return 7;
     }
-    if(strcmp("AUG", month)==0){
-        printf("DEBUG: Returning AUG(8) for input: %s", month);
+    if(strcmp("Aug", month)==0){
+        printf("DEBUG: Returning AUG(8) for input: %s\n", month);
         return 8;
     }
-    if(strcmp("SEP", month)==0){
-        printf("DEBUG: Returning SEP(9) for input: %s", month);
+    if(strcmp("Sep", month)==0){
+        printf("DEBUG: Returning SEP(9) for input: %s\n", month);
         return 9;
     }
-    if(strcmp("OUT", month)==0){
-        printf("DEBUG: Returning OUT(10) for input: %s", month);
+    if(strcmp("Oct", month)==0){
+        printf("DEBUG: Returning OUT(10) for input: %s\n", month);
         return 10;
     }
-    if(strcmp("NOV", month)==0){
-        printf("DEBUG: Returning NOV(11) for input: %s", month);
+    if(strcmp("Nov", month)==0){
+        printf("DEBUG: Returning NOV(11) for input: %s\n", month);
         return 11;
     }
-    if(strcmp("DEC", month)==0){
-        printf("DEBUG: Returning DEC(12) for input: %s", month);
+    if(strcmp("Dec", month)==0){
+        printf("DEBUG: Returning DEC(12) for input: %s\n", month);
         return 12;
     }
 
@@ -342,33 +346,33 @@ char *random_file(){
         fprintf(stderr, "Can't open file with TES topic number.\n");
         exit(1);
     }
-
+    printf("2\n");
+    topic_number = NULL;
     if ((read = getline(&topic_number, &size, tfp)) != -1) {
         topic_number[strlen(topic_number)-1] = '\0';
     }
-
-
+    printf("1\n" );
+    file = NULL;
     while ((read = getline(&file, &size, ifp)) != -1) {
         if((strncmp(file, topic_number, 3) == 0) && (file[strlen(file)-2]=='f')){ //only choose the .pdf files
             strcpy(files[num_files],file);
             num_files++;
         }
     }
-
+    printf("3\n");
     if (num_files == 0){
         printf("No .pdf questionnaires to show\n"); // TODO substitute with DieWithError
         exit(1);
     }
 
     r = rand() % (num_files);
-
+    printf("5\n");
     out_string = (char *) malloc(sizeof(files[r])+sizeof("dir_TES/")-sizeof(char));
     strcpy(out_string, "dir_TES/");
     strcat(out_string, files[r]);
     out_string[strlen(out_string)-1] = '\0';
-
+    printf("6\n");
     fclose(ifp);
     fclose(tfp);
     return out_string;
 }
-

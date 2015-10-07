@@ -1,12 +1,9 @@
 T01QF01.pdf
-T01QF01.txt
+T01QF01A.txt
 TES.c
 TES.h
 TES_name.txt
 TES_number.txt
-answers.txt
 ficheiros.txt
 mini_client.c
-random_file.c
-test
 user_info.txt
