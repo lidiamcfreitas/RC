@@ -2,7 +2,6 @@
 //  TES.c
 //
 //
-//  Created by Lídia Maria Carvalho de Freitas on 17/09/15.
 //
 //
 
@@ -119,6 +118,14 @@ int main(int argc, char *argv[]){
     if(bind(sock_fd, (struct sockaddr*) &server_addr, sizeof(server_addr))<0)
     	DieWithError("bind() failed");
 
+    
+    /* CHANGE */
+
+    char * test;
+    test = random_file();
+    printf("%s", test);
+
+    /* CHANGE */
     if((file_ptr = fopen("dir_ECP/topics.pdf", "r"))==NULL)
         DieWithError("topics fopen() failed");
     if((answers_ptr = fopen("dir_TES/answers.txt", "r"))==NULL)

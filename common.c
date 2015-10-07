@@ -293,3 +293,61 @@ int month_to_int(char* month){
     }
 
 }
+
+char *random_file(){
+
+    FILE *ifp, *tfp;
+    char *mode = "r";
+    char *file, *out_string;
+    char files[100][13];
+    int num_files, r, i;
+    ssize_t read;
+    size_t size;
+    char *topic_number;
+
+    num_files = 0;
+    srand(time(NULL));
+
+    system("ls ./dir_TES > dir_TES/ficheiros.txt");
+    ifp = fopen("dir_TES/ficheiros.txt", mode);
+    tfp = fopen("dir_TES/TES_number.txt", mode);
+
+    if (ifp == NULL) {
+        fprintf(stderr, "Can't open file with name of files\n");
+        exit(1);
+    }
+
+    if (tfp == NULL){
+        fprintf(stderr, "Can't open file with TES topic number.\n");
+        exit(1);
+    }
+
+    if ((read = getline(&topic_number, &size, tfp)) != -1) {
+        topic_number[strlen(topic_number)-1] = '\0';
+    }
+
+
+    while ((read = getline(&file, &size, ifp)) != -1) {
+        if((strncmp(file, topic_number, 3) == 0) && (file[strlen(file)-2]=='f')){ //only choose the .pdf files
+            strcpy(files[num_files],file);
+            num_files++;
+        }
+    }
+
+    if (num_files == 0){
+        printf("No .pdf questionnaires to show\n"); // TODO substitute with DieWithError
+        exit(1);
+    }
+
+    r = rand() % (num_files);
+
+    out_string = (char *) malloc(sizeof(files[r]));
+
+    strcpy(out_string, files[r]);
+    out_string[strlen(out_string)-1] = '\0';
+
+    fclose(ifp);
+    fclose(tfp);
+    return out_string;
+}
+
