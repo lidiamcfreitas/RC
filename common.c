@@ -341,9 +341,9 @@ char *random_file(){
 
     r = rand() % (num_files);
 
-    out_string = (char *) malloc(sizeof(files[r]));
-
-    strcpy(out_string, files[r]);
+    out_string = (char *) malloc(sizeof(files[r])+sizeof("dir_TES/")-sizeof(char));
+    strcpy(out_string, "dir_TES/");
+    strcat(out_string, files[r]);
     out_string[strlen(out_string)-1] = '\0';
 
     fclose(ifp);

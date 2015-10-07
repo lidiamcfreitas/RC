@@ -22,6 +22,8 @@ FILE *answers_ptr;
 FILE *user_info_ptr;
 
 struct sockaddr_in server_addr, client_addr;
+struct sockaddr_in ecpAddr;
+int udpsock_fd;
 
 int main(int argc, char *argv[]){
 
@@ -98,6 +100,18 @@ int main(int argc, char *argv[]){
     printf("DEBUG: server_port=%d\n", server_port);
     printf("DEBUG: ecp_port=%d\n", ecp_port);
 
+    // UDP
+    if ((udpsock_fd = socket(AF_INET, SOCK_DGRAM, 0))<0)
+        DieWithError("UDP socket() failed");
+    printf("udp: 1\n");
+    /* define server address structure */
+    memset(&ecpAddr, '\0', sizeof(ecpAddr));
+    ecpAddr.sin_family = AF_INET;
+    ecpAddr.sin_addr.s_addr = ((struct in_addr*)(ecphostptr->h_addr_list[0]))->s_addr;
+    ecpAddr.sin_port = htons(ecp_port);
+
+
+    // TPC
     if((sock_fd=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))<0)
         DieWithError("socket() failed");
 
@@ -110,16 +124,16 @@ int main(int argc, char *argv[]){
     if(bind(sock_fd, (struct sockaddr*) &server_addr, sizeof(server_addr))<0)
         DieWithError("bind() failed");
 
-    
-    /* CHANGE */
-
-    char * test;
-    test = random_file();
-    printf("%s", test);
 
     /* CHANGE */
-    if((file_ptr = fopen("dir_ECP/topics.pdf", "r"))==NULL)
-        DieWithError("topics fopen() failed");
+
+    char *path_to_file;
+    path_to_file = random_file();
+    printf("%s\n", path_to_file);
+
+    /* CHANGE */
+    if((file_ptr = fopen(path_to_file, "r"))==NULL)
+        DieWithError("pdf fopen() failed");
     if((answers_ptr = fopen("dir_TES/answers.txt", "r"))==NULL)
         DieWithError("answers fopen() failed");
     if((user_info_ptr = fopen("dir_TES/user_info.txt", "a"))==NULL)
@@ -152,6 +166,7 @@ int main(int argc, char *argv[]){
     printf("(Debug)closing parent\n");
     fclose(file_ptr);
     fclose(answers_ptr);
+    close(udpsock_fd);
     close(sock_fd);
     close(new_fd);
 }
@@ -235,6 +250,49 @@ void process_request(int new_fd){
         printf("Sending %s", write_buffer);
         tcpwrite(new_fd, write_buffer, message_size);
 
+        // UDP to ECP
+        socklen_t addr_size;
+        char rcv_buffer[30];
+        char tosend_buffer[70];
+        char aux_udp_ecp[6];
+        FILE *name_fp;
+        char *name;
+        size_t size;
+        ssize_t read;
+
+        sprintf(aux_udp_ecp, "%d", SID);
+        strcpy(tosend_buffer, "IQR ");
+        strcat(tosend_buffer, aux_udp_ecp);
+        strcat(tosend_buffer, " ");
+        strcat(tosend_buffer, QID);
+
+        name_fp = fopen("dir_TES/TES_name.txt", "r");
+
+        if (name_fp == NULL) {
+            fprintf(stderr, "Can't get topic name from TES_name\n");
+            exit(1);
+        }
+
+        if ((read = getline(&name, &size, name_fp)) != -1) {
+            name[strlen(name)-1] = '\0';
+        }
+
+        fclose(name_fp);
+
+        strcat(tosend_buffer, name);
+        strcat(tosend_buffer, " ");
+        strcat(tosend_buffer, buffer); // add score
+        strcat(tosend_buffer, '\0');
+        
+        //if(sendto(sock_fd, "IQR 12345 QID_cena topic_name 100\n", strlen("IQR 12345 QID_cena topic_name 100\n"), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
+        if(sendto(udpsock_fd, tosend_buffer, strlen(tosend_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
+            DieWithError("sendto() failed");
+        
+        addr_size = sizeof(ecpAddr);
+
+        if(((recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))  
+            DieWithError("recv() failed");
+        printf("%s\n", rcv_buffer);
 
     }
     /* RQT */
@@ -310,4 +368,6 @@ void process_request(int new_fd){
     else{
         printf("Can't Recognize Transmission");
     }
+
+
 }
