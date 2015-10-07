@@ -48,7 +48,6 @@ char* tcpread_nbytes(int socket, int bytes){
     char* ptr;
     memset(buffer, '\0', bytes+1);
     ptr = &buffer[0];
-    printf("reading %d bytes...\n", bytes);
     while( bytes_left > 0 ){
         bytes_read = read(socket, ptr, bytes_left);
         if(bytes_read < 0)
@@ -56,7 +55,6 @@ char* tcpread_nbytes(int socket, int bytes){
         bytes_left -= bytes_read;
         ptr += bytes_read;
     }
-    printf("inside tcpread: %s \n", buffer);
     return buffer;
 }
 
@@ -82,7 +80,6 @@ void tcpwrite(int socket, char* buffer, int nbytes){
 char *get_time(int offset)
 {
     time_t rawtime;
-    printf("asda\n");
     struct tm * timeinfo;
     int len_time;
     char str_time[26];
@@ -90,7 +87,6 @@ char *get_time(int offset)
     char* str_output = malloc(sizeof(char)*20);
     char aux[3];
 
-    printf("asda\n");
     time ( &rawtime );
     rawtime += offset;
     timeinfo = localtime ( &rawtime );
@@ -123,8 +119,6 @@ char *get_time(int offset)
     strcat(str_output, str_sec);
     str_output[19]='\0';
     // string format: DDMMMYYYY_HH:MM:SS
-    printf("wtf %s \n", str_output);
-    printf("%p \n", str_output);
     return str_output;
 }
 

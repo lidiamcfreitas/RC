@@ -145,7 +145,6 @@ int main(int argc, char *argv[]){
             printf("(Debug)Request finished. Closing child\n");
             break;
         }
-        printf("plz\n");
         do 
             i=close(new_fd);
         while(i==-1&&errno==EINTR);
@@ -212,12 +211,12 @@ void process_request(int new_fd){
 
         /*Check answers and calculate score*/
         fscanf(answers_ptr, "%c %c %c %c %c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
-        printf("(DEBUG)The right answers are %c %c %c %c %c", answers[0],answers[1],answers[2],answers[3],answers[4]);        
+        printf("(DEBUG)The right answers are %c %c %c %c %c\n", answers[0],answers[1],answers[2],answers[3],answers[4]);        
         score = 0;
         for(i=0; i<5; i++){
             user_answer = strtok(NULL, " ");
             if(user_answer[0] == answers[i]){
-                printf("Right answer on %d\n", i);
+                printf("(DEBUG)Right answer on %d\n", i);
                 score += 20;
             }
             else{
@@ -226,18 +225,18 @@ void process_request(int new_fd){
         }
         /*Preparing AQS response*/
         printf("Score calculated: %d / 100 \n", score);
+        
         memset(write_buffer, '\0', 256);
         strcpy(write_buffer, "AQS ");
         memset(buffer, '\0', 32);
         sprintf(buffer, "%ld", QID);
-        printf("TEST: %s\n", buffer);
         strcat(write_buffer, buffer);
         strcat(write_buffer, " ");
         memset(buffer, '\0', 32);
         sprintf(buffer, "%d", score);
-        printf("TEST: %s\n", buffer);
         strcat(write_buffer, buffer);
         strcat(write_buffer, "\n");
+        
         size_t message_size = strlen(write_buffer)*sizeof(char);
         printf("(DEBUG)Sending %s", write_buffer);
         tcpwrite(new_fd, write_buffer, message_size);
