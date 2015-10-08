@@ -176,6 +176,7 @@
         close(udpsock_fd);
         close(sock_fd);
         close(new_fd);
+        return 0;
     }
 
     void process_request(int new_fd){
@@ -290,18 +291,23 @@
             tcpwrite(new_fd, write_buffer, message_size);
 
             // UDP to ECP
+            printf("starting udp connection with ECP\n");
             socklen_t addr_size;
             char rcv_buffer[30];
             char tosend_buffer[70];
-            char aux_udp_ecp[6];
+            char aux_udp_ecp[40];
             FILE *name_fp;
             char *name;
+            ssize_t udp_read;
+            size_t udp_len;
+            name = NULL;
 
             sprintf(aux_udp_ecp, "%d", SID);
             strcpy(tosend_buffer, "IQR ");
             strcat(tosend_buffer, aux_udp_ecp);
             strcat(tosend_buffer, " ");
-            strcat(tosend_buffer, QID);
+            sprintf(aux_udp_ecp, "%ld", QID);
+            strcat(tosend_buffer, aux_udp_ecp);
 
             name_fp = fopen("dir_TES/TES_name.txt", "r");
 
@@ -310,16 +316,18 @@
                 exit(1);
             }
 
-            if ((read = getline(&name, &len, name_fp)) != -1) {
+            if ((udp_read = getline(&name, &udp_len, name_fp)) != -1) {
                 name[strlen(name)-1] = '\0';
             }
 
             fclose(name_fp);
-
+            strcat(tosend_buffer, " ");
             strcat(tosend_buffer, name);
             strcat(tosend_buffer, " ");
-            strcat(tosend_buffer, buffer); // add score
-            strcat(tosend_buffer, '\0');
+            sprintf(aux_udp_ecp, "%d", score);
+            strcat(tosend_buffer, aux_udp_ecp); // add score
+            strcat(tosend_buffer, "\n");
+            printf("sending to ECP: %s\n", tosend_buffer);
 
             //if(sendto(sock_fd, "IQR 12345 QID_cena topic_name 100\n", strlen("IQR 12345 QID_cena topic_name 100\n"), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
             if(sendto(udpsock_fd, tosend_buffer, strlen(tosend_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)

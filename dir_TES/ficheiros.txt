@@ -4,6 +4,7 @@ TES.c
 TES.h
 TES_name.txt
 TES_number.txt
+answers.txt
 ficheiros.txt
 mini_client.c
 user_info.txt
