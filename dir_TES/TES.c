@@ -327,17 +327,17 @@
             sprintf(aux_udp_ecp, "%d", score);
             strcat(tosend_buffer, aux_udp_ecp); // add score
             strcat(tosend_buffer, "\n");
-            printf("sending to ECP: %s\n", tosend_buffer);
+            printf("sending to ECP: %s", tosend_buffer);
 
-            //if(sendto(sock_fd, "IQR 12345 QID_cena topic_name 100\n", strlen("IQR 12345 QID_cena topic_name 100\n"), 0, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
             if(sendto(udpsock_fd, tosend_buffer, strlen(tosend_buffer), 0, (struct sockaddr*) &ecpAddr, sizeof(ecpAddr))<0)
                 DieWithError("sendto() failed");
 
             addr_size = sizeof(ecpAddr);
 
+            memset(&rcv_buffer, '\0', sizeof(rcv_buffer));
             if(((recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
                 DieWithError("recv() failed");
-            printf("%s\n", rcv_buffer);
+            printf("%s", rcv_buffer);
     }
     /* RQT */
     else if(strcmp(read_buffer, "RQT ")==0){

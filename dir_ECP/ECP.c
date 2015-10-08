@@ -135,9 +135,10 @@ int main(int argc, char *argv[]){
             fprintf(f, "%d %s %s %d", sid, qid, topname, score);
 
             fclose(f);
-
+            memset(&to_send, '\0', sizeof(to_send));
             strcpy(to_send, "AWI ");
             strcat(to_send, qid);
+            strcat(to_send, "\n");
 
             if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                 DieWithError("sendto() failed");

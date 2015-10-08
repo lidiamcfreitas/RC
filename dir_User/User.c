@@ -305,7 +305,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
                 }
                 if(found == 0)
                     DieWithError("Received incorrect message structure from server");
-                printf("You scored %s / 100 on your questionnaire!",response);
+                printf("You scored %s percent on your questionnaire!",response);
 
            }
 		/* -------------->>>>> FIX-ME <<<<<------------*/
