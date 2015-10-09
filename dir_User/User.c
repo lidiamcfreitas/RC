@@ -184,7 +184,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
         printf("(DEBUG)Received: %s\n", rcv_buffer);
 
         if(strcmp("EOF\n", rcv_buffer)==0)
-            DieWithError("No topics to show.\n");
+            printf("Topic not available.\n");
         else if(strcmp("ERR\n", rcv_buffer)==0)
             DieWithError("Error reading TQR\n");
         else if(msg_size > 28){
