@@ -321,9 +321,9 @@ char *random_file(){
     num_files = 0;
     srand(time(NULL));
 
-    system("ls > ficheiros.txt");
-    ifp = fopen("ficheiros.txt", mode);
-    tfp = fopen("TES_number.txt", mode);
+    system("ls ./dir_TES > dir_TES/ficheiros.txt");
+    ifp = fopen("dir_TES/ficheiros.txt", mode);
+    tfp = fopen("dir_TES/TES_number.txt", mode);
 
     if (ifp == NULL) {
         fprintf(stderr, "Can't open file with name of files\n");
@@ -334,12 +334,10 @@ char *random_file(){
         fprintf(stderr, "Can't open file with TES topic number.\n");
         exit(1);
     }
-    printf("2\n");
     topic_number = NULL;
     if ((read = getline(&topic_number, &size, tfp)) != -1) {
         topic_number[strlen(topic_number)-1] = '\0';
     }
-    printf("1\n" );
     file = NULL;
     while ((read = getline(&file, &size, ifp)) != -1) {
         if((strncmp(file, topic_number, 3) == 0) && (file[strlen(file)-2]=='f')){ //only choose the .pdf files
@@ -347,21 +345,16 @@ char *random_file(){
             num_files++;
         }
     }
-    printf("3\n");
     if (num_files == 0){
         printf("No .pdf questionnaires to show\n"); // TODO substitute with DieWithError
         exit(1);
     }
 
     r = rand() % (num_files);
-    printf("5\n");
-    //out_string = (char *) malloc(sizeof(files[r])+sizeof("dir_TES/")-sizeof(char));
-    //strcpy(out_string, "dir_TES/");
-    out_string = (char *) malloc(sizeof(files[r])-sizeof(char));
-    strcpy(out_string, "");
+    out_string = (char *) malloc(sizeof(files[r])+sizeof("dir_TES/")-sizeof(char));
+    strcpy(out_string, "dir_TES/");
     strcat(out_string, files[r]);
     out_string[strlen(out_string)-1] = '\0';
-    printf("6\n");
     fclose(ifp);
     fclose(tfp);
     return out_string;

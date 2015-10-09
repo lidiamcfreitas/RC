@@ -124,14 +124,11 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             DieWithError("sendto() failed");
 
         addr_size = sizeof(ecpAddr);
-        printf("(Debug)TQR sent...\n");
 
         /* RECEIVE TOPICS */
         if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, 2476, 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
             DieWithError("recv() failed");
-        printf("Char: %c \n", rcv_buffer[msg_size]);
         rcv_buffer[msg_size] = '\0';
-        printf("(DEBUG)Received: %s \n", rcv_buffer);
 
         if(strcmp("EOF\n", rcv_buffer)==0)
             DieWithError("No topics to show.\n");
@@ -148,7 +145,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             /* print topics list */
             topic_name = strtok(NULL, " ");
             num_topics = atoi(topic_name);
-            printf("(Debug) Received %d topics.\n", num_topics);
+            printf("There are %d topics available:\n", num_topics);
             for(i = 1; i<=num_topics;i++){
                 topic_name = strtok(NULL, " ");
                 printf("%d. %s\n", i, topic_name);
@@ -181,7 +178,6 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             DieWithError("recv() failed");
 
         rcv_buffer[msg_size] = '\0';
-        printf("(DEBUG)Received: %s\n", rcv_buffer);
 
         if(strcmp("EOF\n", rcv_buffer)==0)
             printf("Topic not available.\n");
@@ -192,11 +188,12 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             DieWithError("Received message too large");
         }
         else{ /*parse AWTES IPTES PORTES ... */
-            printf("(Debug)parsing AWTES\n");
             topic_name = strtok(rcv_buffer, " ");
 
-            if(strcmp(topic_name,"AWTES")!=0)
-                printf("Could not recognize AWTES\n");
+            if(strcmp(topic_name,"AWTES")!=0){
+                DieWithError("Could not recognize AWTES\n");
+            }
+
             topic_name = strtok(NULL, " ");
             strcpy(tes_addr, topic_name);
             topic_name = strtok(NULL, " ");
@@ -210,21 +207,17 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             strcat(send_buffer, buffer);
             strcat(send_buffer, "\n");
 
-            printf("(Debug)Sending request to %d\n", tcpsock_fd);
             tcpwrite(tcpsock_fd, send_buffer, 10);
 
             char* data = tcpread_nbytes(tcpsock_fd, 4);
-            printf("(Debug)Received response: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 26, 1);
 
             /*Saving QID for later operations*/
-            printf("(Debug)QID: %s\n", data);
             QID = malloc(sizeof(char)*strlen(data));
             strcpy(QID, data);
 
             /*Time limit*/
             data = tcpread_nbytes(tcpsock_fd, 19);
-            printf("(Debug)Time limit: %s\n", data);
             printf("Your deadline is %s\n", data);
 
             /*File transfer - */
@@ -252,7 +245,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
                 //if(bytes_read != 0)
                   //  printf("read %d , wrote %d, left %d\n", bytes_read, bytes_written, bytes_left);
             }
-            printf("Downloaded file with success!\n");
+            printf("Downloaded file with success! You have 10 minutes to submit your answers.\n");
             fclose(end_file);
         }
     }
@@ -288,16 +281,13 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             strcat(send_buffer,q5);
             strcat(send_buffer, "\n");
             stringLen = strlen(send_buffer);
-            printf("DEBUG: Sending: %s\n", send_buffer);
 
             tcpwrite(tcpsock_fd, send_buffer, stringLen);
 	        char* response = tcpread_nbytes(tcpsock_fd,4);
             if(strcmp(response, "AQS ")!=0){
-                printf("(DEBUG)Wrong response from server ( got %s )\n", response);
                 DieWithError("Unexpected response");
 	        }else{
 
-                printf("(DEBUG)Received AQS\n");
                 response = tcpread_until_char(tcpsock_fd, ' ',24, 1);
                 printf("(DEBUG)QID: %s\n", response);
                 response = tcpread_until_char(tcpsock_fd, '\n',5, 0);
@@ -353,7 +343,7 @@ int tcpinit(char* tes_addr, short unsigned tes_port){
     /* construct server address structure */
     memset(&tcp_addr, '\0', sizeof(tcp_addr));
     server_addr.sin_family = AF_INET;
-    printf("(Debug)Starting TCP connection on: %s %d\n", tes_addr, tes_port);
+    printf("Starting TCP connection on: %s %d\n", tes_addr, tes_port);
     server_addr.sin_addr.s_addr = inet_addr(tes_addr);
     server_addr.sin_port = htons(tes_port);
     if( connect(tcpsock_fd, (struct sockaddr*)&server_addr, sizeof(tcp_addr)) < 0)

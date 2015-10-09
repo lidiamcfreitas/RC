@@ -50,17 +50,18 @@ int main(int argc, char *argv[]){
     if(bind(sock_fd, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
     	DieWithError("bind() failed");
     
-    if((file_ptr = fopen("topics.txt", "r"))==NULL)
+    if((file_ptr = fopen("dir_ECP/topics.txt", "r"))==NULL)
         DieWithError("fopen() failed");
 
     i = 0;
+    printf("Parsing topics.txt...\n");
     while(fscanf(file_ptr, "%s %s %hu", topic_name, topic_ip, &topic_port)==3){
         strcpy(TES_servers[i].QName, topic_name);
         strcpy(TES_servers[i].TESIp,  topic_ip);
         TES_servers[i].TESPort = topic_port;
         i++;
         num_TES++;
-        printf("read: %s %s %hu \n", topic_name, topic_ip, topic_port); 
+        printf("Found Topic: %s %s %hu \n", topic_name, topic_ip, topic_port); 
     }
     fclose(file_ptr);    
     clnt_addr_len = sizeof(clnt_addr);
@@ -85,9 +86,9 @@ int main(int argc, char *argv[]){
                 {
                     strcat(to_send, TES_servers[i].QName);
                     strcat(to_send, " ");
-                    printf("%s\n", to_send);
                 }
                 to_send[strlen(to_send)-1] = '\n'; /* substitute ' ' for '\n'" */
+                printf("Sending response: %s to request: ", to_send);
                 if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             }
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]){
                 sprintf(topic_name, "%d", TES_servers[i].TESPort); /* using topic_name just to reuse variable */
                 strcat(to_send, topic_name);
                 strcat(to_send, "\n");
-
+                printf("Sending response: %s to request: ", to_send);
                 if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             }
@@ -120,7 +121,7 @@ int main(int argc, char *argv[]){
             char topname[26];
             int score;
 
-            FILE *f = fopen("stats.txt", "a");
+            FILE *f = fopen("dir_ECP/stats.txt", "a");
             if (f == NULL)
                 DieWithError("Error opening file: stats.txt");
             
@@ -138,7 +139,7 @@ int main(int argc, char *argv[]){
             strcpy(to_send, "AWI ");
             strcat(to_send, qid);
             strcat(to_send, "\n");
-
+            printf("Sending response: %s to request: ", to_send);
             if (sendto(sock_fd, to_send, strlen(to_send), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                 DieWithError("sendto() failed");
         }
@@ -148,7 +149,7 @@ int main(int argc, char *argv[]){
             if (sendto(sock_fd, "ERR\n", strlen("ERR\n"), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                 DieWithError("sendto() failed");
         }
-        printf("Received %sFrom %s:%d\n", buffer, inet_ntoa(clnt_addr.sin_addr),ntohs(clnt_addr.sin_port));
+        printf("%sFrom %s:%d\n", buffer, inet_ntoa(clnt_addr.sin_addr),ntohs(clnt_addr.sin_port));
 
     }
     close(sock_fd);
