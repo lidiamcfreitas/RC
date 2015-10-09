@@ -61,7 +61,9 @@ int main(int argc, char *argv[]){
         }
         sid_str = argv[1];
     }
-
+    if(argc==2){
+        sid_str = argv[1];
+    }
     /* create the UDP socket */
     if ((udpsock_fd = socket(AF_INET, SOCK_DGRAM, 0))<0)
         DieWithError("UDP socket() failed");
@@ -127,6 +129,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
         /* RECEIVE TOPICS */
         if(((msg_size = recvfrom(udpsock_fd, rcv_buffer, 2476, 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
             DieWithError("recv() failed");
+        printf("Char: %c \n", rcv_buffer[msg_size]);
         rcv_buffer[msg_size] = '\0';
         printf("(DEBUG)Received: %s \n", rcv_buffer);
 
