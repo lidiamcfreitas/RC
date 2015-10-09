@@ -63,7 +63,6 @@ int main(int argc, char *argv[]){
         printf("read: %s %s %hu \n", topic_name, topic_ip, topic_port); 
     }
     fclose(file_ptr);    
-
     clnt_addr_len = sizeof(clnt_addr);
     
     for(;;){ 
@@ -97,7 +96,7 @@ int main(int argc, char *argv[]){
         else if(!strncmp(buffer, "TER ", 4) && (recv_string_len==strlen("TER 1\n") || recv_string_len==strlen("TER 99\n"))){
             sscanf(buffer, "TER %d", &i);
             i--; /* 1...99 to 0..98 */
-            if(i<0 || i>99){
+            if(i<0 || i>num_TES-1 || i>98){
                 if (sendto(sock_fd, "EOF\n", strlen("EOF\n"), 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr))<0)
                     DieWithError("sendto() failed");
             } else {
