@@ -130,21 +130,18 @@
 
         /* CHANGE */
 
-        printf("lalele\n");
         path_to_file = random_file();
         printf("%s\n", path_to_file);
 
-        printf("lalala\n");
         /* CHANGE */
         if((file_ptr = fopen(path_to_file, "r"))==NULL)
             DieWithError("pdf fopen() failed");
-        printf("lalala\n");
         path_to_answer = strtok(path_to_file, ".");
         strcat(path_to_answer, "A.txt");
 
         if((answers_ptr = fopen(path_to_answer, "r"))==NULL)
             DieWithError("answers fopen() failed");
-        if((user_info_ptr = fopen("dir_TES/user_info.txt", "a+"))==NULL)
+        if((user_info_ptr = fopen("user_info.txt", "a+"))==NULL)
             DieWithError("user_info fopen() failed");
 
         listen(sock_fd, 5);
@@ -309,7 +306,7 @@
             sprintf(aux_udp_ecp, "%ld", QID);
             strcat(tosend_buffer, aux_udp_ecp);
 
-            name_fp = fopen("dir_TES/TES_name.txt", "r");
+            name_fp = fopen("TES_name.txt", "r");
 
             if (name_fp == NULL) {
                 fprintf(stderr, "Can't get topic name from TES_name\n");

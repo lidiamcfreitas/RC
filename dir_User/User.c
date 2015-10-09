@@ -1,7 +1,7 @@
-//  User.c
 //
 //
-//  Created by Lídia Maria Carvalho de Freitas on 17/09/15.
+//  GRUPO 26 
+//  Jorge Santos, Lidia Freitas, Miguel Vera
 //
 //
 
@@ -11,7 +11,7 @@
 
 void process_command(struct sockaddr_in ecpAddr, int udpsock_fd, int sid);
 int tcpinit(char * tes_addr, short unsigned tes_port);
-
+ 
 int request_done;
 struct sockaddr_in server_addr;
 char tes_addr[16];
@@ -26,12 +26,13 @@ int main(int argc, char *argv[]){
     int udpsock_fd;
     int broadcast;
     int sid;
+    char* sid_str;
     broadcast = 1;
     request_done = 0;
 
-    if( argc < 1 || argc > 5 || argc % 2 != 1 ) /* test for correct number of arguments */
+    if( argc < 2 || argc > 6 || argc % 2 != 0 ) /* test for correct number of arguments */
     {
-        fprintf(stderr, "Usage: %s [-n ECPname] [-p ECPport]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [SID] [-n ECPname] [-p ECPport]\n", argv[0]);
         exit(1);
     }
 
@@ -41,22 +42,24 @@ int main(int argc, char *argv[]){
     }
     ecpPort = DEFAULT_PORT;
 
-    if(argc==5)
+    if(argc==6)
     {   /* considering that the order is correct */
-        if((ecphostptr = gethostbyname(argv[2]))<0)
+        if((ecphostptr = gethostbyname(argv[3]))<0)
             DieWithError("gethostbyname() failed");
-        ecpPort = atoi(argv[4]);
+        ecpPort = atoi(argv[5]);
+        sid_str = argv[1];
     }
-    if(argc==3)
+    if(argc==4)
     {
-        if(strcmp(argv[1], "-n") == 0)
+        if(strcmp(argv[2], "-n") == 0)
         {
             ecphostptr = gethostbyname(argv[2]);
         }
-        else if(strcmp(argv[1], "-p") == 0)
+        else if(strcmp(argv[2], "-p") == 0)
         {
             ecpPort = atoi(argv[2]);
         }
+        sid_str = argv[1];
     }
 
     /* create the UDP socket */
@@ -75,9 +78,7 @@ int main(int argc, char *argv[]){
     /* get SID */
     //srand (time(NULL));
     //sid = rand() % 90000 + 10000;
-    
-    printf("Welcome. Before you can answer any questionnaire you need to provide your student number(5 digits).\nSID > ");
-    scanf("%d", &sid);
+    sid = atoi(sid_str);
     if(sid < 10000 || sid > 99999){
         printf("Wrong format for student number provided.\n");
         exit(1);
@@ -147,7 +148,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             printf("(Debug) Received %d topics.\n", num_topics);
             for(i = 1; i<=num_topics;i++){
                 topic_name = strtok(NULL, " ");
-                printf("%d. %s\n", i, topic_name); /* TODO verify if name is larger than 25 */
+                printf("%d. %s\n", i, topic_name);
             }
         }
     }
