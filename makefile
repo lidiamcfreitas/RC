@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -Wall
+CFLAGS=-w -c -Wall
 
 all: user ecp tes mini_client 
 

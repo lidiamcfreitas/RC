@@ -2,7 +2,6 @@
 //  DieWithError.c
 //  
 //
-//  Created by Lídia Maria Carvalho de Freitas on 09/09/15.
 //
 //
 
