@@ -132,33 +132,18 @@ int compare_time(char * time_limit, char * curr_time){
 
     int result;
 
-    printf("DEBUG: Broke %s", time_limit);
     limit = strtok_r(time_limit, "_", &save_limit);
-    printf("into: %s\n", limit);
 
-    printf("before curr_time break \n");
-    printf("DEBUG: Broke %s\n", curr_time);
     curr = strtok_r(curr_time, "_", &save_curr);
-    printf("into: %s\n", curr);
-    printf("after curr_time break \n");
 
-    printf("Calling compare_date\n" );
     result = compare_date(limit, curr);
-    printf("DEBUG: compare_date returned: %d\n", result);
     if(result == - 1 || result == 1)
         return result;
     else{
 
-        printf("DEBUG: Broke %s", time_limit);
         limit = strtok_r(NULL, "_", &save_limit);
-        printf("into: %s\n", limit);
-
-        printf("DEBUG: Broke %s", curr_time);
         curr = strtok_r(NULL, "_", &save_curr);
-        printf("into: %s\n", curr);
-        printf("Calling compare_hms\n" );
         result = compare_hms(limit, curr);
-        printf("DEBUG: compare_hms returned: %d\n", result);
         return result;
     }
 }
@@ -176,13 +161,13 @@ int compare_date(char* time_limit, char* curr_time){
     for(i=0; i<4; i++){
         limit[i] = time_limit[5+i];
     }
-    limit[5+i] = "\0";
-    printf("DEBUG: Broke %s into: %s\n", time_limit, limit);
+    limit[4] = '\0';
+
     for(i=0; i<4; i++){
         curr[i] = curr_time[5+i];
     }
-    curr[5+i] = "\0";
-    printf("DEBUG: Broke %s into: %s\n", curr_time, curr);
+    curr[4] = '\0';
+
     result = atoi(limit)-atoi(curr);
     if(result > 0)
         return 1;
@@ -193,13 +178,13 @@ int compare_date(char* time_limit, char* curr_time){
     for(i=0; i<3; i++){
         limit[i] = time_limit[2+i];
     }
-    limit[2+i] = "\0";
-    printf("DEBUG: Broke %s into: %s\n", time_limit, limit);
+    limit[3] = '\0';
+
     for(i=0; i<3; i++){
         curr[i] = curr_time[2+i];
     }
-    curr[2+i] = "\0";
-    printf("DEBUG: Broke %s into: %s\n", curr_time, curr);
+    curr[3] = '\0';
+
     result = month_to_int(limit)-month_to_int(curr);
     if(result > 0)
         return 1;
@@ -210,13 +195,13 @@ int compare_date(char* time_limit, char* curr_time){
     for(i=0; i<2; i++){
         limit[i] = time_limit[i];
     }
-    limit[i] = "\0";
-    printf("DEBUG: Broke %s into: %s\n", time_limit, limit);
+    limit[2] = '\0';
+
     for(i=0; i<2; i++){
         curr[i] = curr_time[i];
     }
-    curr[i] = "\0";
-    printf("DEBUG: Broke %s into: %s\n", curr_time, curr);
+    curr[2] = '\0';
+
     if(result > 0)
         return 1;
     else{
@@ -232,21 +217,26 @@ int compare_date(char* time_limit, char* curr_time){
   returns -1 if curr > time, 0 if equal, 1 if limit>curr
 */
 int compare_hms(char* time_limit, char* curr_time){
-    char* limit, *curr;
-    char* save_limit, *save_curr;
+    char limit[3], curr[3];
+    int limit_int, curr_int;
     int result, i;
 
     for(i=0; i<3; i++){
-        printf("DEBUG: Broke %s",time_limit);
-        limit = strtok_r(time_limit, ":", &save_limit);
-        printf("into: %s\n", time_limit, limit);
-        printf("DEBUG: Broke %s",time_limit);
-        curr = strtok_r(curr_time, ":", &save_limit);
-        printf("into: %s\n", curr_time, curr);
-        result = atoi(limit)-atoi(curr);
-        if(result == 1 || result == -1)
+
+        limit[0] = time_limit[i*3+0];
+        limit[1] = time_limit[i*3+1];
+        limit[2] = '\0';
+        limit_int = atoi(limit);
+
+        curr[0] = curr_time[i*3+0];
+        curr[1] = curr_time[i*3+1];
+        curr[2] = '\0';
+        curr_int = atoi(curr);
+
+        result = limit_int - curr_int;
+        if(result > 0 || result < 0)
             return result;
-    }
+        }
     return result;
 }
 
@@ -265,52 +255,50 @@ int compare_hms(char* time_limit, char* curr_time){
 int month_to_int(char* month){
 
     if(strcmp("Jan", month)==0){
-        printf("DEBUG: Returning JAN(1) for input: %s\n", month);
         return 1;
     }
 
     if(strcmp("Feb", month)==0){
-        printf("DEBUG: Returning FEB(2) for input: %s\n", month);
         return 2;
     }
     if(strcmp("Mar", month)==0){
-        printf("DEBUG: Returning MAR(3) for input: %s\n", month);
+
         return 3;
     }
     if(strcmp("Apr", month)==0){
-        printf("DEBUG: Returning APR(4) for input: %s\n", month);
+
         return 4;
     }
     if(strcmp("May", month)==0){
-        printf("DEBUG: Returning MAY(5) for input: %s\n", month);
+
         return 5;
     }
     if(strcmp("Jun", month)==0){
-        printf("DEBUG: Returning JUN(6) for input: %s\n", month);
+
         return 6;
     }
     if(strcmp("Jul", month)==0){
-        printf("DEBUG: Returning JUL(7) for input: %s\n", month);
+
         return 7;
     }
     if(strcmp("Aug", month)==0){
-        printf("DEBUG: Returning AUG(8) for input: %s\n", month);
+
         return 8;
     }
     if(strcmp("Sep", month)==0){
-        printf("DEBUG: Returning SEP(9) for input: %s\n", month);
+
         return 9;
     }
     if(strcmp("Oct", month)==0){
-        printf("DEBUG: Returning OUT(10) for input: %s\n", month);
+
         return 10;
     }
     if(strcmp("Nov", month)==0){
-        printf("DEBUG: Returning NOV(11) for input: %s\n", month);
+
         return 11;
     }
     if(strcmp("Dec", month)==0){
-        printf("DEBUG: Returning DEC(12) for input: %s\n", month);
+        
         return 12;
     }
 

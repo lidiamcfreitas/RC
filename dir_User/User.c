@@ -1,6 +1,6 @@
 //
 //
-//  GRUPO 26 
+//  GRUPO 26
 //  Jorge Santos, Lidia Freitas, Miguel Vera
 //
 //
@@ -11,7 +11,7 @@
 
 void process_command(struct sockaddr_in ecpAddr, int udpsock_fd, int sid);
 int tcpinit(char * tes_addr, short unsigned tes_port);
- 
+
 int request_done;
 struct sockaddr_in server_addr;
 char tes_addr[16];
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]){
         exit(1);
     }
     printf("You are now identified as %d.\n", sid);
-    
+
     for(;;){
         process_command(ecpAddr, udpsock_fd, sid);
     }
@@ -108,7 +108,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
     if (strcmp(command, "exit")==0){
         exit(0);
     }
-    
+
     /* LIST */
     else if(strcmp(command, "list")==0){
         char send_buffer[5];
@@ -157,7 +157,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
     }
     /* REQUEST  TOPIC*/
     else if(strcmp(command, "request")==0){
-        request_done = 1; 
+        request_done = 1;
         char request_no[3];
         char send_buffer[16];
         char rcv_buffer[32];
@@ -209,24 +209,24 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             sprintf(buffer, "%d", sid);
             strcat(send_buffer, buffer);
             strcat(send_buffer, "\n");
-            
+
             printf("(Debug)Sending request to %d\n", tcpsock_fd);
             tcpwrite(tcpsock_fd, send_buffer, 10);
-            
+
             char* data = tcpread_nbytes(tcpsock_fd, 4);
             printf("(Debug)Received response: %s\n", data);
             data = tcpread_until_char(tcpsock_fd, ' ', 26, 1);
-            
+
             /*Saving QID for later operations*/
             printf("(Debug)QID: %s\n", data);
             QID = malloc(sizeof(char)*strlen(data));
             strcpy(QID, data);
-            
-            /*Time limit*/    
+
+            /*Time limit*/
             data = tcpread_nbytes(tcpsock_fd, 19);
             printf("(Debug)Time limit: %s\n", data);
             printf("Your deadline is %s\n", data);
-            
+
             /*File transfer - */
             data = tcpread_until_char(tcpsock_fd, ' ', 32, 1);
             long total_bytes = 0, file_size = atoi(data);
@@ -234,10 +234,10 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             char* test_buffer = malloc(sizeof(char)*256+2);
             FILE* end_file = fopen("questionnaire.pdf", "w");
             char* ptr;
-       
+
             bytes_left = file_size;
             ptr = &test_buffer[0];
-            
+
             printf("Starting file download. %lu bytes left\n", bytes_left);
             while(bytes_left > 0){
                 bytes_read = read(tcpsock_fd, ptr, 256);
@@ -265,9 +265,9 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             char send_buffer[46];
             char SID[6];
             int stringLen;
-            
-            sprintf(SID, "%d", sid); 
-            
+
+            sprintf(SID, "%d", sid);
+
             /*Readin user answer*/
             scanf("%s %s %s %s %s", q1, q2, q3, q4, q5);
 
@@ -289,7 +289,7 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
             strcat(send_buffer, "\n");
             stringLen = strlen(send_buffer);
             printf("DEBUG: Sending: %s\n", send_buffer);
-            
+
             tcpwrite(tcpsock_fd, send_buffer, stringLen);
 	        char* response = tcpread_nbytes(tcpsock_fd,4);
             if(strcmp(response, "AQS ")!=0){
@@ -309,7 +309,14 @@ void process_command( struct sockaddr_in ecpAddr, int udpsock_fd, int sid)
                 }
                 if(found == 0)
                     DieWithError("Received incorrect message structure from server");
-                printf("You scored %s percent on your questionnaire!",response);
+
+                int score = atoi(response);
+                if(score == -1)
+                    printf("Questionnaire was submited after deadline");
+                if(score == -2)
+                    printf("SID and QID pair does not Match");
+                else
+                    printf("You scored %d percent on your questionnaire!",score);
 
            }
 		/* -------------->>>>> FIX-ME <<<<<------------*/

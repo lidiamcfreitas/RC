@@ -196,7 +196,7 @@
             char answers[5];
             char user_answers[5];
             char* QID;
-            int SID, found = 0, score;
+            int SID, found = 0, score = 0;
 
             /*GET QID and SID from TCP*/
             read_buffer = tcpread_until_char(new_fd, '\n', 40, 1);
@@ -213,7 +213,6 @@
             printf("processing users\n");
             rewind(user_info_ptr);
             while(read = getline(&temp,&len, user_info_ptr)!=-1){
-                printf("first line %s . size %d\n", temp, len);
                 getline_helper = strtok(temp, " ");
                 user_array[i].SID = atoi(getline_helper);
 
@@ -224,7 +223,6 @@
                 strcpy(user_array[i].time_limit, getline_helper);
                 user_array[i].def =1;
 
-                printf("read: %zd  i:%d\n",read ,i);
                 i++;
             }
             printf("read: %d\n", read);
@@ -236,7 +234,6 @@
             strcpy(QID, user_answer);
             for(i=0; i<5 ;  i++){
                 user_answer = strtok(NULL, " ");
-                printf("user answers = %s\n", user_answer);
                 user_answers[i] = user_answer[0];
                 printf("user answers = %c\n", user_answers[i]);
             }
@@ -244,32 +241,33 @@
 
             /* search user_array for received user */
             for(i=0; user_array[i].def != 0 && i< 99; i++ ){
-                printf("Testing user:%d vs %d with QID:%s vs %s and time_limit:%s\n", user_array[i].SID, SID, user_array[i].QID, QID, user_array[i].time_limit);
                 if(user_array[i].SID == SID && strcmp(user_array[i].QID,QID)==0){
                     printf("DEBUG: Match found on user: %d\n", user_array[i].SID);
                     printf("Testing time:%s\n", get_time());
                     if(compare_time(user_array[i].time_limit, get_time())<0)
-                        DieWithError("Time limit exceeded");
+                        score = -1;
+
                     found = 1;
                 }
             }
-            /*FIX ME score -1 se timeout -2 else normal*/
-            /*Servidor deveria continuar ligado se o SID for mal? talvez so ignorar o request*/
-            //if(found == 0)
-            //  DieWithError("User SID not found");
 
-            /*Check answers and calculate score*/
-            fscanf(answers_ptr, "%c\n%c\n%c\n%c\n%c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
-            printf("(DEBUG)The right answers are %c %c %c %c %c\n", answers[0],answers[1],answers[2],answers[3],answers[4]);
-            score = 0;
-            for(i=0; i<5; i++){
-                printf("%c\n", user_answers[i]);
-                if(user_answers[i] == answers[i]){
-                    printf("(DEBUG)Right answer on %d\n", i);
-                    score += 20;
-                }
-                else{
-                    printf("Wrong answer on %d\n", i);
+            if(found == 0)
+                score = -2;
+
+            if(score == 0){
+                /*Check answers and calculate score*/
+                fscanf(answers_ptr, "%c\n%c\n%c\n%c\n%c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
+                printf("(DEBUG)The right answers are %c %c %c %c %c\n", answers[0],answers[1],answers[2],answers[3],answers[4]);
+                score = 0;
+                for(i=0; i<5; i++){
+                    printf("%c\n", user_answers[i]);
+                    if(user_answers[i] == answers[i]){
+                        printf("(DEBUG)Right answer on %d\n", i);
+                        score += 20;
+                    }
+                    else{
+                        printf("Wrong answer on %d\n", i);
+                    }
                 }
             }
             /*Preparing AQS response*/
@@ -360,7 +358,7 @@
         printf("(DEBUG)QID is: %s\n", QID);
 
         /*GET Current Time*/
-        time_limit = get_time(600);
+        time_limit = get_time(20);
         fprintf(user_info_ptr, "%s\n", time_limit);
         fflush(user_info_ptr);
         printf("(DEBUG)Time limit is: %s\n", time_limit);
