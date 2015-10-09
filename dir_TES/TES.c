@@ -241,7 +241,7 @@
 
             if(found == 0)
                 score = -2;
-
+            rewind(answers_ptr);
             if(score == 0){
                 /*Check answers and calculate score*/
                 fscanf(answers_ptr, "%c\n%c\n%c\n%c\n%c", &answers[0],&answers[1],&answers[2],&answers[3],&answers[4]);
@@ -318,6 +318,7 @@
             memset(&rcv_buffer, '\0', sizeof(rcv_buffer));
             if(((recvfrom(udpsock_fd, rcv_buffer, sizeof(rcv_buffer), 0, (struct sockaddr*) &ecpAddr, &addr_size))<0))
                 DieWithError("recv() failed");
+            printf("Received response from ECP: %s\n", rcv_buffer);
             if(strncmp(rcv_buffer, "AWI", 3) == 0){
                 printf("Questionnaire submission successful\n");
             }else{
