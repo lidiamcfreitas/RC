@@ -50,11 +50,11 @@ int main(int argc, char *argv[]){
     if(bind(sock_fd, (struct sockaddr*) &servAddr, sizeof(servAddr))<0)
     	DieWithError("bind() failed");
     
-    if((file_ptr = fopen("dir_ECP/topics.txt", "r"))==NULL)
+    if((file_ptr = fopen("topics.txt", "r"))==NULL)
         DieWithError("fopen() failed");
 
     i = 0;
-    while(fscanf(file_ptr, "%s %[^:]:%hu", topic_name, topic_ip, &topic_port)==3){
+    while(fscanf(file_ptr, "%s %s %hu", topic_name, topic_ip, &topic_port)==3){
         strcpy(TES_servers[i].QName, topic_name);
         strcpy(TES_servers[i].TESIp,  topic_ip);
         TES_servers[i].TESPort = topic_port;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
             char topname[26];
             int score;
 
-            FILE *f = fopen("dir_ECP/stats.txt", "a");
+            FILE *f = fopen("stats.txt", "a");
             if (f == NULL)
                 DieWithError("Error opening file: stats.txt");
             

@@ -333,9 +333,9 @@ char *random_file(){
     num_files = 0;
     srand(time(NULL));
 
-    system("ls ./dir_TES > dir_TES/ficheiros.txt");
-    ifp = fopen("dir_TES/ficheiros.txt", mode);
-    tfp = fopen("dir_TES/TES_number.txt", mode);
+    system("ls > ficheiros.txt");
+    ifp = fopen("ficheiros.txt", mode);
+    tfp = fopen("TES_number.txt", mode);
 
     if (ifp == NULL) {
         fprintf(stderr, "Can't open file with name of files\n");
@@ -367,8 +367,10 @@ char *random_file(){
 
     r = rand() % (num_files);
     printf("5\n");
-    out_string = (char *) malloc(sizeof(files[r])+sizeof("dir_TES/")-sizeof(char));
-    strcpy(out_string, "dir_TES/");
+    //out_string = (char *) malloc(sizeof(files[r])+sizeof("dir_TES/")-sizeof(char));
+    //strcpy(out_string, "dir_TES/");
+    out_string = (char *) malloc(sizeof(files[r])-sizeof(char));
+    strcpy(out_string, "");
     strcat(out_string, files[r]);
     out_string[strlen(out_string)-1] = '\0';
     printf("6\n");

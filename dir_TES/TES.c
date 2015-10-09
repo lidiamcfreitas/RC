@@ -10,12 +10,12 @@
 
 
     typedef struct{
-        long QID;
+        char* QID;
         int SID;
         char time_limit[19];
         int def;
     }user_info;
-    user_info user_array[99];
+    user_info user_array[512];
 
     FILE *file_ptr;
     FILE *answers_ptr;
@@ -138,7 +138,7 @@
             DieWithError("pdf fopen() failed");
         path_to_answer = strtok(path_to_file, ".");
         strcat(path_to_answer, "A.txt");
-
+        printf("answers: %s\n", path_to_answer);
         if((answers_ptr = fopen(path_to_answer, "r"))==NULL)
             DieWithError("answers fopen() failed");
         if((user_info_ptr = fopen("user_info.txt", "a+"))==NULL)
@@ -195,7 +195,7 @@
             char* getline_helper;
             char answers[5];
             char user_answers[5];
-            long QID;
+            char* QID;
             int SID, found = 0, score;
 
             /*GET QID and SID from TCP*/
@@ -218,7 +218,8 @@
                 user_array[i].SID = atoi(getline_helper);
 
                 getline_helper = strtok(NULL, " ");
-                user_array[i].QID = atol(getline_helper);
+                user_array[i].QID = malloc(sizeof(getline_helper));
+                strcpy(user_array[i].QID,getline_helper);
                 getline_helper = strtok(NULL, " ");
                 strcpy(user_array[i].time_limit, getline_helper);
                 user_array[i].def =1;
@@ -230,7 +231,9 @@
             user_answer = strtok(read_buffer, " ");
             SID = atoi(user_answer);
             user_answer = strtok(NULL, " ");
-            QID = atol(user_answer);
+            printf("Parse user answers\n");
+            QID = malloc(sizeof(user_answer));
+            strcpy(QID, user_answer);
             for(i=0; i<5 ;  i++){
                 user_answer = strtok(NULL, " ");
                 printf("user answers = %s\n", user_answer);
@@ -241,8 +244,8 @@
 
             /* search user_array for received user */
             for(i=0; user_array[i].def != 0 && i< 99; i++ ){
-                printf("Testing user:%d vs %d with QID:%ld vs %ld and time_limit:%s\n", user_array[i].SID, SID, user_array[i].QID, QID, user_array[i].time_limit);
-                if(user_array[i].SID == SID && user_array[i].QID == QID){
+                printf("Testing user:%d vs %d with QID:%s vs %s and time_limit:%s\n", user_array[i].SID, SID, user_array[i].QID, QID, user_array[i].time_limit);
+                if(user_array[i].SID == SID && strcmp(user_array[i].QID,QID)==0){
                     printf("DEBUG: Match found on user: %d\n", user_array[i].SID);
                     printf("Testing time:%s\n", get_time());
                     if(compare_time(user_array[i].time_limit, get_time())<0)
@@ -275,8 +278,7 @@
             memset(write_buffer, '\0', 256);
             strcpy(write_buffer, "AQS ");
             memset(buffer, '\0', 32);
-            sprintf(buffer, "%ld", QID);
-            strcat(write_buffer, buffer);
+            strcat(write_buffer, QID);
             strcat(write_buffer, " ");
             memset(buffer, '\0', 32);
             sprintf(buffer, "%d", score);
@@ -303,8 +305,7 @@
             strcpy(tosend_buffer, "IQR ");
             strcat(tosend_buffer, aux_udp_ecp);
             strcat(tosend_buffer, " ");
-            sprintf(aux_udp_ecp, "%ld", QID);
-            strcat(tosend_buffer, aux_udp_ecp);
+            strcat(tosend_buffer, QID);
 
             name_fp = fopen("TES_name.txt", "r");
 
@@ -338,7 +339,8 @@
     }
     /* RQT */
     else if(strcmp(read_buffer, "RQT ")==0){
-        long QID, SID;
+        char* QID = malloc(sizeof(char)*24);
+        long SID, QID_r;
         char* time_limit;
         printf("(DEBUG)Processing RQT\n");
 
@@ -350,9 +352,12 @@
 
         /*GENERATE QID*/
         srand (time(NULL));
-        QID = rand() % 900000 + 100000;
-        fprintf(user_info_ptr, "%ld ", QID);
-        printf("(DEBUG)QID is: %ld\n", QID);
+        QID_r = rand() % 900000 + 100000;
+        sprintf(QID, "%ld", QID_r);
+        strcat(QID, "_");
+        strcat(QID, read_buffer);
+        fprintf(user_info_ptr, "%s ", QID);
+        printf("(DEBUG)QID is: %s\n", QID);
 
         /*GET Current Time*/
         time_limit = get_time(600);
@@ -369,8 +374,7 @@
         /*Preparing AQT response*/
         printf("(DEBUG)Preparing AQT response\n");
         strcpy(write_buffer, "AQT ");
-        sprintf(buffer, "%ld", QID);
-        strcat(write_buffer, buffer);
+        strcat(write_buffer, QID);
         strcat(write_buffer, " ");
         strcat(write_buffer, time_limit);
         strcat(write_buffer, " ");
